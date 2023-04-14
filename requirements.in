@@ -2,3 +2,6 @@ voila
 numpy
 pandas
 ipywidgets
+sympy
+matplotlib
+streamlit
