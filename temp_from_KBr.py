@@ -33,7 +33,7 @@ def main():
     
 
     #%% Enter the relaxation time and find the temperature
-    t1 = st.number_input(":blue[Enter a relaxation time in s:] ", min_value=1.0e-6, max_value=1000.0, step=1.0e-3, value = 1.0)
+    t1 = st.number_input(":blue[Enter a relaxation time in s:] ", min_value=1.0e-4, max_value=1000.0, step=1.0e-2, value = 1.0)
     _, l=find_nearest(y, t1)
 
 
