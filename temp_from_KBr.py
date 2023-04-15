@@ -33,7 +33,7 @@ def main():
     
 
     #%% Enter the relaxation time and find the temperature
-    t1 = st.number_input("Enter a relaxation time in s: ", value = 15)
+    t1 = st.number_input(":blue[Enter a relaxation time in s:] ", min_value=1.0e-6, max_value=1000.0, step=1.0e-3, value = 1.0)
     _, l=find_nearest(y, t1)
 
 
@@ -46,7 +46,12 @@ def main():
     ax.legend(loc='upper right')
 
     #%% Output cells
-    st.write('#### The temperature is '+ str(np.round(temp[l],2)) + ' K')
+    if temp[l] > 100.0:
+        st.write('#### The temperature is '+ str(np.round(temp[l],2)) + ' K :hot_face:')
+    elif temp[l] > 60.0 and temp[l] <= 100.0:
+        st.write('#### The temperature is '+ str(np.round(temp[l],2)) + ' K :cold_sweat:')
+    else:
+        st.write('#### The temperature is '+ str(np.round(temp[l],2)) + ' K :cold_face:')
     st.pyplot(fig)
 
 if __name__ == "__main__":
