@@ -12,6 +12,8 @@ argon2-cffi==21.3.0
     # via jupyter-server
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
+asteval==0.9.29
+    # via lmfit
 asttokens==2.2.1
     # via stack-data
 attrs==22.2.0
@@ -64,6 +66,8 @@ fastjsonschema==2.16.3
     # via nbformat
 fonttools==4.39.3
     # via matplotlib
+future==0.18.3
+    # via uncertainties
 gitdb==4.0.10
     # via gitpython
 gitpython==3.1.31
@@ -125,6 +129,8 @@ jupyterlab-widgets==3.0.7
     # via ipywidgets
 kiwisolver==1.4.4
     # via matplotlib
+lmfit==1.2.0
+    # via -r requirements.in
 markdown-it-py==2.2.0
     # via rich
 markupsafe==2.1.2
@@ -165,10 +171,12 @@ numpy==1.24.2
     #   -r requirements.in
     #   altair
     #   contourpy
+    #   lmfit
     #   matplotlib
     #   pandas
     #   pyarrow
     #   pydeck
+    #   scipy
     #   streamlit
 packaging==23.0
     # via
@@ -249,6 +257,8 @@ requests==2.28.2
     #   streamlit
 rich==13.3.4
     # via streamlit
+scipy==1.10.1
+    # via lmfit
 send2trash==1.8.0
     # via jupyter-server
 six==1.16.0
@@ -305,6 +315,8 @@ tzdata==2023.3
     #   tzlocal
 tzlocal==4.3
     # via streamlit
+uncertainties==3.1.7
+    # via lmfit
 urllib3==1.26.15
     # via requests
 validators==0.20.0
