@@ -57,7 +57,7 @@ if option == 'Monoexponential':
 
 if option == 'Stretched Exponential':
     tb = st.number_input('Enter the time component: ', value = 10.0)
-    beta = st.number_input('Enter the time component: ', min_value=0.0, max_value=1.0, step=0.1, value = 0.5)
+    beta = st.number_input('Enter the $\beta$ component: ', min_value=0.0, max_value=1.0, step=0.1, value = 0.5)
     max_time = st.number_input('Enter the maximum time in the buildup: ', value = 512.0)
     x, y, optd1 = optimumrecycledelaystrexp(max_time, tb, beta)
 
