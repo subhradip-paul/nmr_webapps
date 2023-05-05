@@ -6,4 +6,4 @@ sympy
 matplotlib
 streamlit
 lmfit
-mpld3
+plotly

@@ -93,7 +93,6 @@ jinja2==3.1.2
     #   altair
     #   jupyter-server
     #   jupyterlab-server
-    #   mpld3
     #   nbconvert
     #   pydeck
 json5==0.9.11
@@ -139,9 +138,7 @@ markupsafe==2.1.2
     #   jinja2
     #   nbconvert
 matplotlib==3.7.1
-    # via
-    #   -r requirements.in
-    #   mpld3
+    # via -r requirements.in
 matplotlib-inline==0.1.6
     # via
     #   ipykernel
@@ -150,8 +147,6 @@ mdurl==0.1.2
     # via markdown-it-py
 mistune==2.0.5
     # via nbconvert
-mpld3==0.5.9
-    # via -r requirements.in
 mpmath==1.3.0
     # via sympy
 nbclient==0.7.3
@@ -190,6 +185,7 @@ packaging==23.0
     #   jupyterlab-server
     #   matplotlib
     #   nbconvert
+    #   plotly
     #   streamlit
 pandas==1.5.3
     # via
@@ -208,6 +204,8 @@ pillow==9.5.0
     #   streamlit
 platformdirs==3.2.0
     # via jupyter-core
+plotly==5.14.1
+    # via -r requirements.in
 prometheus-client==0.16.0
     # via jupyter-server
 prompt-toolkit==3.0.38
@@ -283,6 +281,8 @@ streamlit==1.21.0
     # via -r requirements.in
 sympy==1.11.1
     # via -r requirements.in
+tenacity==8.2.2
+    # via plotly
 terminado==0.17.1
     # via jupyter-server
 tinycss2==1.2.1
