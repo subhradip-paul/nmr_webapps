@@ -44,7 +44,7 @@ colorama==0.4.6
     #   ipython
 comm==0.1.3
     # via ipykernel
-contourpy==1.0.7
+contourpy==1.0.6
     # via matplotlib
 cycler==0.11.0
     # via matplotlib
