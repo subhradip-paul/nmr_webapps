@@ -1,7 +1,6 @@
 #%% Header files
 import numpy as np
 import streamlit as st
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 
@@ -11,9 +10,10 @@ def plotinad(t2prime, jcc):
     y=(np.sin(2*np.pi*jcc*x*1e-3)**2)*np.exp(-4*x/t2prime)
     fig = go.Figure(data=go.Scatter(x=x, y=y))
     fig.update_layout(title = "Inadequate DQ Efficiency", 
-                      xaxis_title=r"$ \tau_0 $ (ms)", yaxis_title='<b> DQ Efficiency </b>',
-                      font_size = 28,
-                      font_family = 'Lucida Fax')
+                      xaxis_title= "T<sub>0</sub> (ms)", yaxis_title='<b> DQ Efficiency </b>',
+                      font_size = 16,
+                      font_family = 'Lucida Fax'
+                      )
     return fig
 
 #%% User Input
@@ -27,5 +27,6 @@ st.markdown(r"**The total mixing time is 4 $\tau_0$**"    )
 
 fig_inad=plotinad(t2prime_input, Jcc_input)
 
+# st.components.v1.html(fig_inad.to_html(include_mathjax='cdn'),height=500)
 
 st.plotly_chart(fig_inad)
