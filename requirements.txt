@@ -80,7 +80,7 @@ importlib-metadata==6.3.0
     # via streamlit
 ipykernel==6.16.2
     # via ipywidgets
-ipython==8.12.0
+ipython==7.34.0
     # via
     #   ipykernel
     #   ipywidgets
