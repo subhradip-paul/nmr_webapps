@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
 
-nuctable=pd.read_csv('NMR_freq_table.csv')
+script_dir = os.path.dirname(__file__)
+csv_file = os.path.join(script_dir, '../dep/NMR_freq_table.csv')
+
+nuctable=pd.read_csv(csv_file)
 gyr_ratio_MHz_T=nuctable["GyrHz"]
 name_nuc=nuctable["Name"]
 

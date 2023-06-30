@@ -2,10 +2,14 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import os
+
 
 def main():
     #%% Read the data file
-    df = pd.read_csv('biradicals_molarmass.csv')
+    script_dir = os.path.dirname(__file__)
+    csv_file = os.path.join(script_dir, '../dep/biradicals_molarmass.csv')
+    df = pd.read_csv(csv_file)
     st.write(df)
 
     #%% Ask for the biradical and conc.
