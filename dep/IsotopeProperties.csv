@@ -1,4 +1,4 @@
-﻿Proton,Neutron,Mass,Nucleus,Name,Spin,Abundance(%),Gamma (MHz/T),Q(fm^2),FreqRatio,Refsample,SampleCondition,Lifetime(y),Gamma
+﻿Proton,Neutron,Mass,Nucleus,Name,Spin,Abundance (%),Gamma (MHz/T),Q (fm^2),$\gamma_h/\gamma_n$,Refsample,SampleCondition,Lifetime(y),Gamma
 1,0,1,H,Hydrogen,0.5,99.9885,42.57746906,0,100,Me<sub>4</sub>Si,"CDCl<sub>3</sub>, φ = 1%",-,26.7522128
 1,1,2,H,Hydrogen,1.0,0.0115,6.535901313,0.285783,15.350609,(CD<sub>3</sub>)<sub>4</sub>Si,neat,-,4.10662791
 1,2,3,H,Hydrogen,0.5,-,45.41482784,0,106.663974,Me<sub>4</sub>Si-t1,-,12.32 y,28.5349779
