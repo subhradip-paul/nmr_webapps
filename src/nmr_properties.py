@@ -20,11 +20,11 @@ if (len(user_input) == 3):
     nuc_choice=df.loc[df['Nucleus'] == user_input[1]]
     st.markdown(nuc_choice.iloc[:,:10].to_markdown(index=False))
     st.caption("Properties of the Nucleus, Database from [ssNake](https://github.com/smeerten/ssnake).")
-    larmor_freq=nuc_choice["Gamma"].to_numpy().astype(float)
+    larmor_freq=nuc_choice["Gamma (MHz/T)"].to_numpy().astype(float)
     st.write(pd.DataFrame({
     'Mass Num': nuc_choice["Mass"],
     'Nucleus' : nuc_choice["Nucleus"],
-    'Larmor Freq (MHz)': larmor_freq*mag_field*np.pi*2,
+    'Larmor Freq (MHz)': larmor_freq*mag_field,
     }).to_markdown(index=False))
     st.caption("Larmor Frequency :tornado:")
 else:
@@ -32,11 +32,11 @@ else:
     mass_choice = nuc_choice.loc[nuc_choice['Mass'] == user_input[1]]
     st.markdown(mass_choice.iloc[:,:10].to_markdown(index=False))
     st.caption("Properties of the Nucleus, Database from [ssNake](https://github.com/smeerten/ssnake).")
-    larmor_freq=mass_choice["Gamma"].to_numpy().astype(float)
+    larmor_freq=mass_choice["Gamma (MHz/T)"].to_numpy().astype(float)
     st.write(pd.DataFrame({
     'Mass Num': mass_choice["Mass"],
     'Nucleus' : mass_choice["Nucleus"],
-    'Larmor Freq (MHz)': larmor_freq*10*mag_field/(2*np.pi),
+    'Larmor Freq (MHz)': larmor_freq*mag_field,
     }).to_markdown(index=False))
     st.caption("Larmor Frequency :tornado:")
 
