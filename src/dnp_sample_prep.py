@@ -10,7 +10,9 @@ def main():
     script_dir = os.path.dirname(__file__)
     csv_file = os.path.join(script_dir, '../dep/biradicals_molarmass.csv')
     df = pd.read_csv(csv_file)
-    st.write(df)
+    df = df.sort_values(by=['Name'])
+    df2 = df[['Name','MW']]
+    st.dataframe(df2, hide_index=True)
 
     #%% Ask for the biradical and conc.
     rad = st.selectbox('Biradical: ', df.Name, index=1)
