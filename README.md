@@ -1,9 +1,7 @@
----
-Description: Some small applications made with Streamlit and deployed with Render. To run a script you need to install streamlit.<br>*pip install streamlit* <br> and then run the code using <br> *streamlit run <codename>.py*
+# Description
+Some small applications made with Streamlit and deployed with Render. To run a script you need to install streamlit.<br>*pip install streamlit* <br> and then run the code using <br> *streamlit run <codename>.py*
 
----
-
-# NMR Web Apps
+## NMR Web Apps
 <img src=".gitbook/assets/streamlit-mark-color.png" alt="streamlit-logo" data-size="line" width="80" class="center"/>
 
 ### Dipolar Coupling Calculator (dipole_calculator.py)
