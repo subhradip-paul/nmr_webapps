@@ -1,7 +1,6 @@
 ---
-Description: Some small applications made with Streamlit and deployed with Render. To run a script you need to install streamlit.
-pip install streamlit and then run the scripts as
-streamlit run <code name>.py
+Description: Some small applications made with Streamlit and deployed with Render. To run a script you need to install streamlit.<br>*pip install streamlit* <br> and then run the code using <br> *streamlit run <codename>.py*
+
 ---
 
 # NMR Web Apps
