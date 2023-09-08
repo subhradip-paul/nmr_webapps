@@ -12,13 +12,13 @@ Once it starts, everything should be fast.
 
 
 ## Cloning the repo
-If you clone/fork the repo, to run a script you need to install streamlit.\
+If you clone/fork the repo, to run a script you need to install streamlit.
 ```
-_pip install streamlit_\
+pip install streamlit
 ```
-and then run the code using\
+and then run the code using
 ```
-_streamlit run <code-name>.py_
+streamlit run <code-name>.py
 ```
 It will start a local server and the script will run from there.
 
