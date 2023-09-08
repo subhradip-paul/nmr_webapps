@@ -7,13 +7,19 @@ description: Some small applications made using Streamlit and deployed with Rend
 ## Running the scripts online
 Just click on the link beside the script.
 It takes a while for the initial run as the service needs to wake up.
-Then it will be fast.
+As I am using free service of Render, the apps go to sleep when not used for sometime.
+Once it starts, everything should be fast.
 
-## Clong the repo
+
+## Cloning the repo
 If you clone/fork the repo, to run a script you need to install streamlit.\
+```
 _pip install streamlit_\
+```
 and then run the code using\
-_streamlit run .py_
+```
+_streamlit run <code-name>.py_
+```
 It will start a local server and the script will run from there.
 
 ### Dipolar Coupling Calculator [dipole_calculator.py](https://dipole-to-distance.onrender.com/)
