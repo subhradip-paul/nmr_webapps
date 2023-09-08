@@ -1,10 +1,8 @@
 ---
-description: Some small applications made with flask or Streamlit.
+description: Some small applications made using Streamlit and deployed with Render.
 ---
 
 # NMR Web Apps
-
-Some small applications made with Streamlit and deployed with Render. 
 
 ## Running the scripts online
 Just click on the link beside the script.
