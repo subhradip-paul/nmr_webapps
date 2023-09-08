@@ -4,12 +4,19 @@ description: Some small applications made with flask or Streamlit.
 
 # NMR Web Apps
 
-Some small applications made with Streamlit and deployed with Render. To run a script you need to install streamlit.\
+Some small applications made with Streamlit and deployed with Render. 
+
+## Running the scripts online
+Just click on the link beside the script.
+It takes a while for the initial run as the service needs to wake up.
+Then it will be fast.
+
+## Clong the repo
+If you clone/fork the repo, to run a script you need to install streamlit.\
 _pip install streamlit_\
 and then run the code using\
 _streamlit run .py_
-
-## NMR Web Apps
+It will start a local server and the script will run from there.
 
 ### Dipolar Coupling Calculator [dipole_calculator.py](https://dipole-to-distance.onrender.com/)
 
