@@ -32,7 +32,7 @@ def dipole2dist(choice_nuc1, choice_nuc2, dipole):
     gyr1=gyr_ratio_MHz_T[nuc1idx[0]]*1e6
     gyr2=gyr_ratio_MHz_T[nuc2idx[0]]*1e6
 
-    dist=1e10 * ((1e-7*(gyr1*gyr2*pl)/dipole) ** (1/3))
+    dist=1e10 * ((1e-7*abs((gyr1*gyr2*pl))/dipole) ** (1/3))
     return dist
     # print("The distance  = " + str(np.abs(np.round(dist,2))) + ' A')
     
