@@ -15,11 +15,14 @@ def optimumrecycledelaytwoexp(x, ampl1, tau1, tau2):
     lam_x = lambdify(t, y, modules=['numpy'])
     lam_x2 = lambdify(t, y_bup, modules=['numpy'])
     lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.00001, x, 100000)
+    x_vals = np.linspace(0.1, x, 1000000)
     y_vals = lam_x(x_vals)
     y_vals_bup = lam_x2(x_vals)
     y_vals_sens = lam_x3(x_vals)
-    return x_vals, y_vals_bup, y_vals_sens, x_vals[np.argmin(abs(y_vals))]
+    optd1diff = x_vals[np.argmin(y_vals)]
+    optd1sens = x_vals[np.argmax(y_vals_sens)]
+    optd1 = min(optd1diff,optd1sens)                
+    return x_vals, y_vals_bup, y_vals_sens, optd1
 
 def optimumrecycledelayoneexp(x, tau1):
     t, Ta = symbols ('t Ta')
@@ -32,11 +35,14 @@ def optimumrecycledelayoneexp(x, tau1):
     lam_x = lambdify(t, y, modules=['numpy'])
     lam_x2 = lambdify(t, y_bup, modules=['numpy'])
     lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.00001, x, 100000)
+    x_vals = np.linspace(0.1, x, 1000000)
     y_vals = lam_x(x_vals)
     y_vals_bup = lam_x2(x_vals)
     y_vals_sens = lam_x3(x_vals)
-    return x_vals, y_vals_bup, y_vals_sens, x_vals[np.argmin(abs(y_vals))]
+    optd1diff = x_vals[np.argmin(y_vals)]
+    optd1sens = x_vals[np.argmax(y_vals_sens)]
+    optd1 = min(optd1diff,optd1sens)   
+    return x_vals, y_vals_bup, y_vals_sens, optd1
 
 def optimumrecycledelaystrexp(x, tau1, beta):
     t, b, Ta = symbols ('t b Ta')
@@ -49,11 +55,14 @@ def optimumrecycledelaystrexp(x, tau1, beta):
     lam_x = lambdify(t, y, modules=['numpy'])
     lam_x2 = lambdify(t, y_bup, modules=['numpy'])
     lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.00001, x, 100000)
+    x_vals = np.linspace(0.1, x, 1000000)
     y_vals = lam_x(x_vals)
     y_vals_bup = lam_x2(x_vals)
     y_vals_sens = lam_x3(x_vals)
-    return x_vals, y_vals_bup, y_vals_sens, x_vals[np.argmin(abs(y_vals))]
+    optd1diff = x_vals[np.argmin(y_vals)]
+    optd1sens = x_vals[np.argmax(y_vals_sens)]
+    optd1 = min(optd1diff,optd1sens)                
+    return x_vals, y_vals_bup, y_vals_sens, optd1
 
 option = st.selectbox('Which model?', ('Monoexponential', 'Biexponential', 'Stretched Exponential'))
 
