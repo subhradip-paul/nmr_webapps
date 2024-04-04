@@ -12,13 +12,15 @@ Once it starts, everything should be fast.
 
 
 ## Running the scripts offline on a computer
-1.  Clone or download the repository. On your computer install git. For windows download it from the [Git for Windows](https://gitforwindows.org/).
-2. On the git terminal, generally called Git Bash, type the command:
+### Cloning the repository / Downloading codes
+1. On your computer install git. For windows download it from the [Git for Windows](https://gitforwindows.org/). It is also available on CEA Centre Logiciel.
+2. On the git terminal, called Git Bash, clone with the command:
 ```
 git clone https://github.com/subhradip-paul/nmr_webapps.git
 ````
 3. Now you will have a directory called nmr_webapps
 4. Navigate to the src folder.
+### Preparing Requirements
 5. Assuming that you have Python installed in your computer, write:
 ```
 pip install streamlit
