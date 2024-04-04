@@ -11,8 +11,15 @@ As I am using free service of Render, the apps go to sleep when not used for som
 Once it starts, everything should be fast.
 
 
-## Cloning the repo
-If you clone/fork the repo, to run a script you need to install streamlit.
+## Running the scripts offline on a computer
+1.  Clone or download the repository. On your computer install git. For windows download it from the [Git for Windows](https://gitforwindows.org/).
+2. On the git terminal, generally called Git Bash, type the command:
+```
+git clone https://github.com/subhradip-paul/nmr_webapps.git
+````
+3. Now you will have a directory called nmr_webapps
+4. Navigate to the src folder.
+5. Assuming that you have Python installed in your computer, write:
 ```
 pip install streamlit
 ```
@@ -22,6 +29,8 @@ streamlit run <code-name>.py
 ```
 It will start a local server and the script will run from there.
 
+
+## Summary of scripts
 ### Dipolar Coupling Calculator [dipole_calculator.py](https://dipole-to-distance.onrender.com/)
 
 The script reads the NMR properties of a nucleus from a .csv file and calculates the dipolar coupling based on the input distance in Angstrom. Alternatively it can also calculate the distance if the user inputs the dipolar coupling.
