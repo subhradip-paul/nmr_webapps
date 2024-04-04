@@ -161,7 +161,7 @@ pytz==2023.3
     # via pandas
 pytz-deprecation-shim==0.1.0.post0
     # via tzlocal
-pywin32==306
+#pywin32==306
     # via jupyter-core
 pyzmq==25.1.0
     # via
