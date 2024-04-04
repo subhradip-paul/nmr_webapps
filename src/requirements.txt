@@ -161,7 +161,7 @@ pytz==2023.3
     # via pandas
 pytz-deprecation-shim==0.1.0.post0
     # via tzlocal
-#pywin32==306
+pywin32==306
     # via jupyter-core
 pyzmq==25.1.0
     # via
@@ -184,7 +184,9 @@ sympy==1.11.1
 tabulate==0.9.0
     # via -r requirements.in
 tenacity==8.2.2
-    # via plotly
+    # via
+    #   plotly
+    #   streamlit
 toml==0.10.2
     # via streamlit
 toolz==0.12.0
