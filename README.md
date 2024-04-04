@@ -23,6 +23,10 @@ git clone https://github.com/subhradip-paul/nmr_webapps.git
 ```
 pip install streamlit
 ```
+or run:
+````
+pip install -r requirements.txt
+````
 and then run the code using
 ```
 streamlit run <code-name>.py
