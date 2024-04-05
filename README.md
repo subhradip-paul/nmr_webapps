@@ -53,7 +53,7 @@ The script calculates the inadequate efficiency based on the relaxation time ($T
 
 The scripts helps to calculate the *weight* of the biradical for a needed concentration where the user knows the volume needed, or calculate the *volume* of solution for a given weight.
 
-### Maximum sensitivity [max_sensitivity_fromt1.py](https://optimum-recycle-delay.onrender.com/)
+### Maximum sensitivity [max_sensitivity_fromt1.py](https://nmrwebapps-maxsentivityt1.streamlit.app/)
 
 The code gives the recycle delay at which you can ontain the maximum sensitivity. It calculates the build up of the signal as a function of the relaxation time, and then calculates the differential of it. The relaxation modules supported are monoexponential, biexponential, and stretched expoenetial.
 
