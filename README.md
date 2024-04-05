@@ -37,7 +37,7 @@ It will start a local server and the script will run from there.
 
 
 ## Summary of scripts
-### Dipolar Coupling Calculator [dipole_calculator.py](https://dipole-to-distance.onrender.com/)
+### Dipolar Coupling Calculator [dipole_calculator.py](https://nmrwebapps-dipolecalculator.streamlit.app/)
 
 The script reads the NMR properties of a nucleus from a .csv file and calculates the dipolar coupling based on the input distance in Angstrom. Alternatively it can also calculate the distance if the user inputs the dipolar coupling.
 
