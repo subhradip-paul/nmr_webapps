@@ -1,86 +1,77 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import symbols, diff, exp, sqrt, lambdify
 import streamlit as st
 
-def optimumrecycledelaytwoexp(x, ampl1, tau1, tau2):
-    t, b, a, Ta, Tb = symbols ('t b a Ta Tb')
-    b = 1-a
-    s=a*(1-exp(-t/Ta))/sqrt(t)+b*(1-exp(-t/Tb))/sqrt(t)
-    bup=s*sqrt(t)
-    y_bup=bup.subs({Ta:tau1,Tb:tau2,a:ampl1})
-    y_sens=s.subs({Ta:tau1,Tb:tau2,a:ampl1})
-    lam_x2 = lambdify(t, y_bup, modules=['numpy'])
-    lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.001, x, 1000000)
-    y_vals_bup = lam_x2(x_vals)
-    y_vals_sens = lam_x3(x_vals)
-    optd1sens = x_vals[np.argmax(y_vals_sens)]
-    return x_vals, y_vals_bup, y_vals_sens, optd1sens
 
-def optimumrecycledelayoneexp(x, tau1):
-    t, Ta = symbols ('t Ta')
-    s=(1-exp(-t/Ta))/sqrt(t)
-    bup=s*sqrt(t)
-    y_bup=bup.subs({Ta:tau1})
-    y_sens=s.subs({Ta:tau1})
-    lam_x2 = lambdify(t, y_bup, modules=['numpy'])
-    lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.001, x, 1000000)
-    y_vals_bup = lam_x2(x_vals)
-    y_vals_sens = lam_x3(x_vals)
-    optd1sens = x_vals[np.argmax(y_vals_sens)]
-    optd1 = optd1sens
-    return x_vals, y_vals_bup, y_vals_sens, optd1
-
-def optimumrecycledelaystrexp(x, tau1, beta):
-    t, b, Ta = symbols ('t b Ta')
-    s=(1-exp(-((t/Ta))**b))/sqrt(t)
-    bup=s*sqrt(t)
-    y_bup=bup.subs({Ta:tau1,b:beta})
-    y_sens=s.subs({Ta:tau1,b:beta})
-    lam_x2 = lambdify(t, y_bup, modules=['numpy'])
-    lam_x3 = lambdify(t, y_sens, modules=['numpy'])
-    x_vals = np.linspace(0.001, x, 1000000)
-    y_vals_bup = lam_x2(x_vals)
-    y_vals_sens = lam_x3(x_vals)
-    optd1sens = x_vals[np.argmax(y_vals_sens)]
-    optd1 = optd1sens                
-    return x_vals, y_vals_bup, y_vals_sens, optd1
-
-option = st.selectbox('Which model?', ('Monoexponential', 'Biexponential', 'Stretched Exponential'))
+def relax_model(a, ta, tb, beta, xmin, xmax):
+  optd1=np.empty([])
+  index=np.empty([])
+  x=np.linspace(xmin, xmax, 1000000)
+  y=1-np.exp(-x/tb)+a*np.exp(-x/tb)-a*np.exp(-(x/ta)**beta)
+  sens=y/np.sqrt(x)
+  dsens = np.gradient(sens,(xmax-xmin)/1000000)
+  index = np.where(np.diff(np.sign(np.squeeze(dsens))) != 0)[0] + 1
+  if index.size > 0:
+    optd1 = x[index]
+  return x, y, sens, optd1
 
 
-if option == 'Monoexponential':
-    tb = st.number_input('Enter the time component: ', value = 10.0)
-    max_time = st.number_input('Enter the maximum time in the buildup: ', value = 100.0)
-    x, snr, sens, optd1 = optimumrecycledelayoneexp(max_time, tb)
+def main():
+    option = st.selectbox('Which model?', ('Monoexponential', 'Biexponential', 'Stretched Exponential'))
 
-if option == 'Stretched Exponential':
-    tb = st.number_input('Enter the time component: ', value = 10.0)
-    beta = st.number_input('Enter the $\beta$ component: ', min_value=0.4, max_value=1.00, step=0.01, value = 0.6)
-    max_time = st.number_input('Enter the maximum time in the buildup: ', value = 100.0)
-    x, snr, sens, optd1 = optimumrecycledelaystrexp(max_time, tb, beta)
+    if option == 'Monoexponential':
+        ta = st.number_input('Enter the time component: ', value = 10.0)
+        max_time = st.number_input('Enter the maximum time in the buildup: ', value = 256.0)
+        x, snr, sens, optd1 = relax_model(1.0, ta, 1000000.0, 1.0, 0.001, max_time)
 
-if option == 'Biexponential':
-    ta = st.number_input('Enter the 1st time component: ', value = 1.0)
-    tb = st.number_input('Enter the 2nd time component: ', value = 10.0)
-    comp1 = st.number_input('Enter the Amplitude 1: ', value = 1.0)
-    comp2 = st.number_input('Enter the Amplitude 1: ', value = 99.0)
-    amp1=comp1/(comp1+comp2)
-    max_time = st.number_input('Enter the maximum time in the buildup: ', value = 100.0)
-    x, snr, sens, optd1 = optimumrecycledelaytwoexp(max_time, amp1, ta, tb)
+    if option == 'Stretched Exponential':
+        ta = st.number_input('Enter the time component: ', value = 10.0)
+        beta = st.number_input('Enter the $\beta$ component: ', min_value=0.1, max_value=1.00, step=0.01, value = 0.6)
+        max_time = st.number_input('Enter the maximum time in the buildup: ', value = 256.0)
+        x, snr, sens, optd1 = relax_model(1.0, ta, 1000000.0, beta, 0.001, max_time)
+
+    if option == 'Biexponential':
+        ta = st.number_input('Enter the 1st time component: ', value = 1.0)
+        tb = st.number_input('Enter the 2nd time component: ', value = 10.0)
+        comp1 = st.number_input('Enter \% of 1st component: ', value = 1.0)
+        amp1=comp1/100
+        max_time = st.number_input('Enter the maximum time in the buildup: ', value = 256.0)
+        x, snr, sens, optd1 = relax_model(amp1, ta, tb, 1.0, 0.001, max_time)
     
+    fig, ax = plt.subplots()
+    ax.plot(x, snr, label='SNR')
+    ax.plot(x, sens, label='Sensitivity')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Intensity')
+    ax.legend(loc = 'best')
+    ax.set_ylim([0.0, 1.2])
+        
+    if not np.shape(optd1):
+        st.subheader("No suitable solution found, derivative has **NO** zero crossing.")
+    else:
+        ax.axvline(x=optd1[0], ls = '--', lw = 0.5, c='magenta')
+        ax.text(x=optd1[0]+5, y=1.1, s=np.round(optd1[0],2) , fontsize=12)
+        st.write('The optimum recycle delay is ' + str(np.round(optd1[0],2)) + ' s')
+    
+    st.pyplot(fig)
+ 
+if __name__ == "__main__":
+    st.markdown('## Optimum recycle delay')
+    st.divider()
+    st.markdown('The script tries to find the recycle delay at which the sensitivity will be the best.\
+                It works for three cases, biexponential buildup, monoexponential buildup, and stretched exponential.\
+                It takes the following general equation for buildup:')
+    st.latex(r"y = a [1-e^{-(x/T_a)^\beta}] + (1-a) [1-e^{-x/T_b}]")
+    st.markdown('In this case sensitivity can be written as:')
+    st.latex(r"f(x) = y/\sqrt{x}")
+    st.markdown('So the best sensitivity will be when:')
+    st.latex(r"\frac{df(x)}{dx} = 0")
+    st.write(r"For monoexponential and biexponential, $\beta$ = 1.0")
+    st.markdown('For monoexponential and stretched exponential, a = 1.0')
+    
+    st.divider()
+    main()                
 
-fig, ax = plt.subplots()
-ax.plot(x, snr, label='SNR')
-ax.plot(x, sens, label='Sensitivity')
 
-ax.plot((optd1,optd1),(0.0,1.0),'k--')
-ax.set_xlabel('Time (s)')
-ax.set_ylabel('Intensity')
-ax.legend(loc = 'best')
-ax.set_ylim([0.0, 1.2])
 
-st.write('The optimum recycle delay is ' + str(np.round(optd1,2)) + ' s')
-st.pyplot(fig)
+
