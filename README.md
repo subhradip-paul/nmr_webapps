@@ -49,7 +49,7 @@ The script calculates the temperature of a sample, based on the relaxation time 
 
 The script calculates the inadequate efficiency based on the relaxation time ($T'_2$) and the J-coupling between the nuclei under observation.
 
-### DNP Sample Prep [dnp_sample_prep.py](https://dnp-sample-prep.onrender.com/)
+### DNP Sample Prep [dnp_sample_prep.py](https://nmrwebapps-dnpsampleprep.streamlit.app/)
 
 The scripts helps to calculate the *weight* of the biradical for a needed concentration where the user knows the volume needed, or calculate the *volume* of solution for a given weight.
 
