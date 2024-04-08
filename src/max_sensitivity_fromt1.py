@@ -39,7 +39,7 @@ def main():
         x, snr, sens, optd1 = relax_model(amp1, ta, tb, 1.0, 0.001, max_time)
     
     fig, ax = plt.subplots()
-    ax.plot(x, snr, label='SNR')
+    ax.plot(x, snr, label='Intensity')
     ax.plot(x, sens, label='Sensitivity')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Intensity')
