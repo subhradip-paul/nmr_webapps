@@ -1,5 +1,5 @@
 ---
-description: Some small applications made using Streamlit and deployed with Render.
+description: Some small applications made using Streamlit and deployed with Streamlit Community Cloud.
 ---
 
 # NMR Web Apps
@@ -7,7 +7,7 @@ description: Some small applications made using Streamlit and deployed with Rend
 ## Running the scripts online
 Just click on the link beside the script.
 It takes a while for the initial run as the service needs to wake up.
-As I am using free service of Render, the apps go to sleep when not used for sometime.
+As I am using free service, the apps go to sleep when not used for sometime.
 Once it starts, everything should be fast.
 
 
