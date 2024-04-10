@@ -31,9 +31,9 @@ pip install -r requirements.txt
 ````
 and then run the code using
 ```
-streamlit run <code-name>.py
+streamlit run homepage.py
 ```
-It will start a local server and the script will run from there.
+It will start a local server and the scripts will run from there.
 
 
 ## Summary of scripts
