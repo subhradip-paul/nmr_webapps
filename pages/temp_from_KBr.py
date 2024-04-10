@@ -51,6 +51,7 @@ def main():
 
 if __name__ == "__main__":
     st.title('Temperature from K$$^{79}$$Br')
+    st.divider()
     st.markdown('The temperature is based on the eqn. <br>'  +
                 '$$T_1 = 0.0145 + 5330 \\times T^{-2} + 1.42e7 \\times T^{-4} + 2.48e9 \\times T^{-6}$$ <br>' +
                 '[Thurber, Tycko. JMR 196, no. 1: 84–87](https://doi.org/10.1016/j.jmr.2008.09.019).' 
