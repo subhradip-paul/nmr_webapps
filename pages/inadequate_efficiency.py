@@ -30,5 +30,7 @@ if __name__ == "__main__":
     st.title("Refocussed INADEQUATE Efficiency")
     st.divider()
     st.markdown(r"This is a plot of DQ Efficiency of INADEQUATE, based \
-    on the paper Cadars et al. *J. Phys. Chem. B.* 110 (2006) 16982."    )
+    on the papers \
+        1. Nakai, T., and C. A. Mcdowell. *J. Magn. Reson.* 104 (1993) 146\
+        2. Cadars et al. *J. Phys. Chem. B.* 110 (2006) 16982."    )
     main()
