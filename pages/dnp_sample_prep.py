@@ -10,16 +10,22 @@ def main():
     script_dir = os.path.dirname(__file__)
     csv_file = os.path.join(script_dir, '../dep/biradicals_molarmass.csv')
     df = pd.read_csv(csv_file)
-    df = df.sort_values(by=['Name'])
-    df2 = df[['Name','MW']]
-    st.dataframe(df2, hide_index=True)
-
+    st.write(df)
     #%% Ask for the biradical and conc.
-    rad = st.selectbox('Biradical: ', df.Name, index=1)
-    conc = st.number_input('Enter the concentration in mM: ', value = 10.0)
-    rad_weight=df["MW"]
-    rad_name = df["Name"]
-    w_idx = rad_name[rad_name.str.fullmatch(rad)].index
+    
+    option = ["Enter MW (g/mol)", "Select from the list"]
+    choice = st.pills('How would you like to select the biradical: ', option, index=1)
+    if choice == "Enter MW (g/mol)":
+        rad_weight = st.number_input('Enter the molecular weight in g/mol: ', value=200.0)
+    else:
+        rad = st.selectbox('Biradical: ', df.Name, index=1)
+        conc = st.number_input('Enter the concentration in mM: ', value = 10.0)
+        rad_weight=df["MW (g/mol)"]
+        rad_name = df["Name"]
+        w_idx = rad_name[rad_name.str.fullmatch(rad)].index
+        rad_weight = rad_weight[w_idx]
+    
+    
 
     #%% Ask for the choice of calculation 
     st.markdown('If you have a certain mass of biradical and you want to calculate the volume of solvent \
@@ -31,7 +37,7 @@ def main():
     #%% main script
     if choice == 'volume':
         w_mg = st.number_input('Weight of biradical in mg: ', value=2.0)
-        volume = w_mg*1e6/(conc*rad_weight[w_idx])
+        volume = w_mg*1e6/(conc*rad_weight)
         st.write('The volume needed is '+ str(round(volume.iloc[0],2)) + ' $\mu$l')
         solvent=st.selectbox('Choice of solvent: ', ('GDH', 'TCE', 'DMSO'))
         if solvent == 'GDH':
@@ -49,7 +55,7 @@ def main():
 
     if choice == 'weight':
         volume = st.number_input('Volume in $\mu$l: ', value=200.0)
-        w_mg=conc*volume*rad_weight[w_idx]/1e6
+        w_mg=conc*volume*rad_weight/1e6
         w_all=conc*volume*rad_weight/1e6
         st.write('The weight needed is ' + str(round(w_mg.iloc[0],2)) + ' mg')
     
