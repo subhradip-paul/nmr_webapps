@@ -24,7 +24,7 @@ def main():
         rad_weight=df["MW (g/mol)"]
         rad_name = df["Name"]
         w_idx = rad_name[rad_name.str.fullmatch(rad)].index
-        rad_weight = rad_weight[w_idx]
+        radical_weight = rad_weight.iloc[w_idx].values[0]
     
     
 
@@ -38,7 +38,7 @@ def main():
     #%% main script
     if choice == 'volume':
         w_mg = st.number_input('Weight of biradical in mg: ', value=2.0)
-        volume = w_mg*1e6/(conc*rad_weight)
+        volume = w_mg*1e6/(conc*radical_weight)
         st.write('The volume needed is '+ str(round(volume,2)) + ' $\\mu$l')
         solvent=st.selectbox('Choice of solvent: ', ('GDH', 'TCE', 'DMSO'))
         if solvent == 'GDH':
@@ -56,7 +56,7 @@ def main():
 
     if choice == 'weight':
         volume = st.number_input('Volume in $\\mu$l: ', value=200.0)
-        w_mg=conc*volume*rad_weight/1e6
+        w_mg=conc*volume*radical_weight/1e6
         st.write('The weight needed is ' + str(round(w_mg,2)) + ' mg')
     
 if __name__ == "__main__":
