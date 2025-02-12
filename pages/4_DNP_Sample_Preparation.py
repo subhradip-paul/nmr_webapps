@@ -14,9 +14,10 @@ def main():
     #%% Ask for the biradical and conc.
     
     option = ["Enter MW (g/mol)", "Select from the list"]
-    choice = st.pills('How would you like to select the biradical: ', option, index=1)
+    choice = st.selectbox('How would you like to select the biradical: ', option, index=1)
     if choice == "Enter MW (g/mol)":
         rad_weight = st.number_input('Enter the molecular weight in g/mol: ', value=200.0)
+        conc = st.number_input('Enter the concentration in mM: ', value=10.0)
     else:
         rad = st.selectbox('Biradical: ', df.Name, index=1)
         conc = st.number_input('Enter the concentration in mM: ', value = 10.0)
@@ -38,7 +39,7 @@ def main():
     if choice == 'volume':
         w_mg = st.number_input('Weight of biradical in mg: ', value=2.0)
         volume = w_mg*1e6/(conc*rad_weight)
-        st.write('The volume needed is '+ str(round(volume.iloc[0],2)) + ' $\mu$l')
+        st.write('The volume needed is '+ str(round(volume,2)) + ' $\\mu$l')
         solvent=st.selectbox('Choice of solvent: ', ('GDH', 'TCE', 'DMSO'))
         if solvent == 'GDH':
             ratio=0.0
@@ -49,15 +50,14 @@ def main():
                 ratio=glycerol+d2o+h2o
                 if ratio != 100.0:
                     st.write('Check percentages')
-            st.write('d8-Glycerol needed is ' + str(round(volume.iloc[0]*(glycerol/100)*1.37,2)) + ' mg')
-            st.write('$D_2O$ needed is ' + str(round(volume.iloc[0]*(d2o/100),2)) + ' $\mu$l')
-            st.write('$H_2O$ needed is ' + str(round(volume.iloc[0]*(h2o/100),2)) + ' $\mu$l')
+            st.write('d8-Glycerol needed is ' + str(round(volume*(glycerol/100)*1.37,2)) + ' mg')
+            st.write('$D_2O$ needed is ' + str(round(volume*(d2o/100),2)) + ' $\\mu$l')
+            st.write('$H_2O$ needed is ' + str(round(volume*(h2o/100),2)) + ' $\\mu$l')
 
     if choice == 'weight':
-        volume = st.number_input('Volume in $\mu$l: ', value=200.0)
+        volume = st.number_input('Volume in $\\mu$l: ', value=200.0)
         w_mg=conc*volume*rad_weight/1e6
-        w_all=conc*volume*rad_weight/1e6
-        st.write('The weight needed is ' + str(round(w_mg.iloc[0],2)) + ' mg')
+        st.write('The weight needed is ' + str(round(w_mg,2)) + ' mg')
     
 if __name__ == "__main__":
     st.title('DNP Sample Preparation :stew:')
