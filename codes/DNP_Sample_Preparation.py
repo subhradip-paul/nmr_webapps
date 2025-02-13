@@ -44,9 +44,9 @@ def main():
         if solvent == 'GDH':
             ratio=0.0
             while ratio != 100.0:
-                glycerol=st.number_input('Glycerol percentage: ', value=60.0)
-                d2o=st.number_input('D2O percentage: ', value=30.0)
-                h2o=st.number_input('H2O percentage: ', value=10.0)
+                glycerol=st.number_input('Glycerol percentage: ', value=60.0, key='glycerol')
+                d2o=st.number_input('D2O percentage: ', value=30.0, key='d2o')
+                h2o=st.number_input('H2O percentage: ', value=10.0, key='h2o')
                 ratio=glycerol+d2o+h2o
                 if ratio != 100.0:
                     st.write('Check percentages')
