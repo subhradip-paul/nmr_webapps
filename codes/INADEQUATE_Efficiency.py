@@ -26,11 +26,10 @@ def main():
     st.write('The max efficiency is: ' + str(round(np.max(inad_eff),2)) + r', and $ \tau_0 $ = ' + str(round(x[np.argmax(inad_eff)],2))+ ' ms')
     st.markdown(r"**The total mixing time is 4 $\tau_0$**"    )
     
-if __name__ == "__main__":
-    st.title("Refocussed INADEQUATE Efficiency")
-    st.divider()
-    st.markdown(r"This is a plot of DQ Efficiency of INADEQUATE, based \
-    on the papers \
-        1. Nakai, T., and C. A. Mcdowell. *J. Magn. Reson.* 104 (1993) 146\
-        2. Cadars et al. *J. Phys. Chem. B.* 110 (2006) 16982."    )
-    main()
+st.title("Refocussed INADEQUATE Efficiency")
+st.divider()
+st.markdown(r"This is a plot of DQ Efficiency of INADEQUATE, based \
+on the papers \
+    1. Nakai, T., and C. A. Mcdowell. *J. Magn. Reson.* 104 (1993) 146\
+    2. Cadars et al. *J. Phys. Chem. B.* 110 (2006) 16982."    )
+main()

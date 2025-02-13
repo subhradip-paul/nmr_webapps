@@ -159,7 +159,7 @@ stack-data==0.6.3
 streamlit==1.42.0
     # via
     #   -r requirements.in
-    #   st-pages
+    #   st-codes
 sympy==1.13.3
     # via -r requirements.in
 tabulate==0.9.0

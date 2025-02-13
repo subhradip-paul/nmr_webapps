@@ -48,7 +48,6 @@ def main():
         plen_final=db2plen(pow_db1, pow_db2, plen_ini)
         st.metric(r"Final pulse in $\mu$s", np.round(plen_final,2), np.round(plen_final-plen_ini,2))
         
-if __name__ == "__main__":
-    st.title('Power Calculator')
-    st.divider()
-    main()
+st.title('Power Calculator')
+st.divider()
+main()

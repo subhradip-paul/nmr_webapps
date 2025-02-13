@@ -15,8 +15,8 @@ st.title("NMR Properties :atom_symbol:")
 nuc=st.text_input('Please enter a nucleus name in the format like 1H or H: ', value = "1H")
 mag_field=st.number_input('Enter a magnetic field in T: ', value = 9.4)
 
-user_input=re.split('(\d+|[A-Za-z]+)',nuc)
-if (len(user_input) == 3):
+user_input=re.split(r'(\d+|[A-Za-z]+)', nuc)
+if len(user_input) == 3:
     nuc_choice=df.loc[df['Nucleus'] == user_input[1]]
     st.dataframe(nuc_choice.iloc[:,:11], hide_index=True)
     st.caption("Properties of the Nucleus, Database from [ssNake](https://github.com/smeerten/ssnake).")

@@ -1,13 +1,24 @@
 import streamlit as st
 
-st.image('dnp_grenoble_logo.png')
 
-st.markdown("Some small apps written by me to help NMR calculations and setting up experiments.\
-    The apps are written in [Python](https://www.python.org/) and deployed using [Streamlit](https://streamlit.io/).\
-        If you want to help or have suggestions, or if you spot some mistakes, please let me know on the github repository.\
-            The github repository is here: https://github.com/subhradip-paul/nmr_webapps.git")
-col1, col2 = st.columns(2)
-with col1:
-    st.image('streamlit-mark-color.png', width=40)
-with col2:
-    st.image('Python-logo.png', width=40)
+home = st.Page('_pages/home.py', default=True, title='Home Page', icon='🔬')
+nuclear_properties = st.Page("codes/NMR_Nuclei_Parameters.py", title="Nuclear properties", icon="⚛")
+optimum_recycle_delay = st.Page("codes/Optimum_Recycle_Delay.py", title="Optimum Recycle Delay", icon="📈")
+sample_temp_kbr = st.Page("codes/Sample_Temp_from_KBr_T1.py", title ="Sample Temperature from KBr T1", icon="🌡️")
+dnp_sample_prep = st.Page("codes/DNP_Sample_Preparation.py", title ="DNP Sample Preparation", icon="🍲")
+dipole_calculator = st.Page("codes/Dipole_Calculator.py", title="Dipole to Distance and reverse", icon="↔")
+inadequate_efficiency_calc = st.Page("codes/INADEQUATE_Efficiency.py", title="Setting up INADEQUATE", icon ="⚖️")
+power_calculator = st.Page("codes/Power_Calculator.py", title ="Power and pulse lengths in NMR", icon="⚡")
+
+
+pg = st.navigation(
+{
+        "Home": [home],
+        "Nuclei in NMR": [nuclear_properties],
+        "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, dipole_calculator, inadequate_efficiency_calc, power_calculator],
+        "DNP Related": [dnp_sample_prep],
+    }
+)
+
+pg.run()
+

@@ -69,15 +69,15 @@ def main():
     
     st.pyplot(fig)
 
-if __name__ == "__main__":
-    st.title('Temperature from K$$^{79}$$Br')
-    st.divider()
-    st.markdown('The temperature is based on the eqn. <br>'  +
-                '$$T_1 = 0.0145 + 5330 \\times T^{-2} + 1.42e7 \\times T^{-4} + 2.48e9 \\times T^{-6}$$ <br>' +
-                '[Thurber, Tycko. JMR 196, no. 1: 84–87](https://doi.org/10.1016/j.jmr.2008.09.019).' 
-                , unsafe_allow_html=True)
-    st.markdown('The equation can be cast as a polynomial substituting $x = T^{-2}$')
-    st.latex(r"2.49 \times 10^9 x^3 + 1.42 \times 10^7 x^2 + 5330 x + (0.0145 - T) = 0")
-    st.markdown(r'Solve for x, and $T = \sqrt{1/x}$')
-    st.divider()
-    main()
+
+st.title('Temperature from K$$^{79}$$Br')
+st.divider()
+st.markdown('The temperature is based on the eqn. <br>'  +
+            '$$T_1 = 0.0145 + 5330 \\times T^{-2} + 1.42e7 \\times T^{-4} + 2.48e9 \\times T^{-6}$$ <br>' +
+            '[Thurber, Tycko. JMR 196, no. 1: 84–87](https://doi.org/10.1016/j.jmr.2008.09.019).'
+            , unsafe_allow_html=True)
+st.markdown('The equation can be cast as a polynomial substituting $x = T^{-2}$')
+st.latex(r"2.49 \times 10^9 x^3 + 1.42 \times 10^7 x^2 + 5330 x + (0.0145 - T) = 0")
+st.markdown(r'Solve for x, and $T = \sqrt{1/x}$')
+st.divider()
+main()

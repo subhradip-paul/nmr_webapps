@@ -26,14 +26,14 @@ def main():
 
     if option == 'Stretched Exponential':
         ta = st.number_input('Enter the time component: ', value = 10.0)
-        beta = st.number_input('Enter the $\beta$ component: ', min_value=0.1, max_value=1.00, step=0.01, value = 0.6)
+        beta = st.number_input('Enter the $\\beta$ component: ', min_value=0.1, max_value=1.00, step=0.01, value = 0.6)
         max_time = st.number_input('Enter the maximum time in the buildup: ', value = 256.0)
         x, snr, sens, optd1 = relax_model(1.0, ta, 1000000.0, beta, 0.001, max_time)
 
     if option == 'Biexponential':
         ta = st.number_input('Enter the 1st time component: ', value = 1.0)
         tb = st.number_input('Enter the 2nd time component: ', value = 10.0)
-        comp1 = st.number_input('Enter \% of 1st component: ', value = 1.0)
+        comp1 = st.number_input('Enter \\% of 1st component: ', value = 1.0)
         amp1=comp1/100
         max_time = st.number_input('Enter the maximum time in the buildup: ', value = 256.0)
         x, snr, sens, optd1 = relax_model(amp1, ta, tb, 1.0, 0.001, max_time)
@@ -55,22 +55,22 @@ def main():
     
     st.pyplot(fig)
  
-if __name__ == "__main__":
-    st.title('Optimum recycle delay')
-    st.divider()
-    st.markdown('The script tries to find the recycle delay at which the sensitivity will be the best.\
-                It works for three cases, biexponential buildup, monoexponential buildup, and stretched exponential.\
-                It takes the following general equation for buildup:')
-    st.latex(r"y = a [1-e^{-(x/T_a)^\beta}] + (1-a) [1-e^{-x/T_b}]")
-    st.markdown('In this case sensitivity can be written as:')
-    st.latex(r"f(x) = y/\sqrt{x}")
-    st.markdown('So the best sensitivity will be when:')
-    st.latex(r"\frac{df(x)}{dx} = 0")
-    st.write(r"For monoexponential and biexponential, $\beta$ = 1.0")
-    st.markdown('For monoexponential and stretched exponential, a = 1.0')
-    
-    st.divider()
-    main()                
+# if __name__ == "__main__":
+st.title('Optimum recycle delay')
+st.divider()
+st.markdown('The script tries to find the recycle delay at which the sensitivity will be the best.\
+            It works for three cases, biexponential buildup, monoexponential buildup, and stretched exponential.\
+            It takes the following general equation for buildup:')
+st.latex(r"y = a [1-e^{-(x/T_a)^\beta}] + (1-a) [1-e^{-x/T_b}]")
+st.markdown('In this case sensitivity can be written as:')
+st.latex(r"f(x) = y/\sqrt{x}")
+st.markdown('So the best sensitivity will be when:')
+st.latex(r"\frac{df(x)}{dx} = 0")
+st.write(r"For monoexponential and biexponential, $\beta$ = 1.0")
+st.markdown('For monoexponential and stretched exponential, a = 1.0')
+
+st.divider()
+main()
 
 
 

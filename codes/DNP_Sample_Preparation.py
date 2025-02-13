@@ -59,13 +59,12 @@ def main():
         w_mg=conc*volume*radical_weight/1e6
         st.write('The weight needed is ' + str(round(w_mg,2)) + ' mg')
     
-if __name__ == "__main__":
-    st.title('DNP Sample Preparation :stew:')
-    st.markdown('This script is helpful for **DNP** sample preparation \
-                The list of biradicals that can be used for calculations are listed below \
-                If you would like me to add more biradicals, let me know the name of the biradical and molecular weight\
-                If you spot any error or mistakes, email me on subhradip.paul@cea.fr\
-                The code comes with absolutely NO WARRANTY, If in doubt, verify the calculations yourself.' )
-    st.divider()
-    main()        
+st.title('DNP Sample Preparation :stew:')
+st.markdown('This script is helpful for **DNP** sample preparation \
+            The list of biradicals that can be used for calculations are listed below \
+            If you would like me to add more biradicals, let me know the name of the biradical and molecular weight\
+            If you spot any error or mistakes, email me on subhradip.paul@cea.fr\
+            The code comes with absolutely NO WARRANTY, If in doubt, verify the calculations yourself.' )
+st.divider()
+main()
     
