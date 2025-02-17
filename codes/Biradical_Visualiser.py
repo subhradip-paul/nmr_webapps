@@ -107,5 +107,5 @@ mol_data = [(key, round(value, 3) if isinstance(value, (int, float)) else value)
 st.markdown("##### Rest of the Molecular Properties")
 
 # Display properties in a table
-st.dataframe(mol_data, column_config={"0": "Property", "1": "Value"}, hide_index=True)
+st.dataframe(mol_data, column_config={"0": "Property", "1": "Value"}, hide_index=True, use_container_width=True)
 
