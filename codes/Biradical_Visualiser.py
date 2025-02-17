@@ -46,7 +46,7 @@ def generate_3d_molecule(smiles_3dfn):
 
 # Load SMILES data
 
-smile_file = os.path.normpath(os.getcwd() + os.sep + os.pardir + '/dep/smilecodes_biradicals.xlsx')
+smile_file = os.path.normpath(os.getcwd() + os.sep + '/dep/smilecodes_biradicals.xlsx')
 df_smile_file = pd.read_excel(smile_file)
 df_smile_file = df_smile_file.sort_values(by="Biradical Name")
 biradical_choice = df_smile_file["Biradical Name"]
