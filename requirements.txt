@@ -7,3 +7,4 @@ rdkit>=2024.9.5
 stmol>=0.0.9
 streamlit_ketcher>=0.0.1
 ipython_genutils>=0.0.1
+openpyxl>=3.1.5
