@@ -25,7 +25,7 @@ def return_smiles_code_mol():
         "TEKPolCbm": "COC(=O)N(C(=O)OC1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1)C1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1",
         "PyPolCbm": "[H]N(C(=O)OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1",
         "AMUPolCbm": "N(CCOCOCOCOC)(C1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C(OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)=O",
-        "AsymPolPOK": "[K+].[O-]P(=O)([O-].[K+])OC1CCC2(CC1)CC(NC(=O)C1=CC(C)(C)N([O])C1(C)C)CC1(CCC(OP(=O)([O-].[K+])O)CC1)N2[O]",
+        "AsymPolPOK": "[O-]P(OC1CCC2(N([O])C3(CCC(OP([O-])([O-])=O)CC3)CC(NC(C3C(C)(C)N([O])C(C)(C)C=3)=O)C2)CC1)([O-])=O",
         "AsymPolTEK": "CC1(C)C=C(C(=O)NC2CC3(CCC(C4=CC=CC=C4)CC3)N([O])C3(CCC(C4=CC=CC=C4)CC3)C2)C(C)(C)N1[O]",
         "HydroPol": "CC[11CH2]N(C(=O)N(C[C](C)O)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1",
         "TEKPolCbo": "[O]N1C2(CCC(C3=CC=CC4=C3C=CC=C4)CC2)CC2(CC13CCC(C1=CC=CC4=C1C=CC=C4)CC3)OCC1(CO2)COC2(CC3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)N([O])C3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)C2)OC1",
@@ -34,12 +34,14 @@ def return_smiles_code_mol():
         "4-Oxo-TEMPO": "CC1(C)CC(=O)CC(C)(C)N1[O]",
         "TEMPO": "CC1(C)CCCC(C)(C)N1[O]",
         "Trityl": "C1=CC=C(C=C1)[C](C1=CC=CC=C1)C1=CC=CC=C1",
-        "TOTAPOL": "CC1(C)CC(CC(C)(C)N1[O])NCC(COC2CC(C)(C)N(C(C)(C)C2)[O])O"
+        "TOTAPOL": "CC1(C)CC(CC(C)(C)N1[O])NCC(COC2CC(C)(C)N(C(C)(C)C2)[O])O",
+        "cAsymPolTEK": "C1C=CC(C2CCC3(N([O])C4(CCC(C5C=CC=CC=5)CC4)CC(NC(C4C5(CCCCC5)N([O])C5(CCCCC5)C=4)=O)C3)CC2)=CC=1"
 
     }
 
     # Convert dictionary to DataFrame
     df = pd.DataFrame(list(molecule_dict.items()), columns=["Biradical Name", "SMILES Code"])
+    df = df.sort_values("Biradical Name")
     return df
 
 def plot_2d_struct_span_ketcher(smiles_2dfn):
@@ -78,14 +80,14 @@ def generate_3d_molecule(smiles_3dfn):
 # script_dir = os.path.dirname(__file__)
 # smile_file = os.path.join(script_dir, '../dep/smilecodes_biradicals.xlsx')
 df_smile_file = return_smiles_code_mol()
-df_smile_file = df_smile_file.sort_values(by="Biradical Name")
+# df_smile_file = df_smile_file.sort_values(by="Biradical Name")
 biradical_choice = df_smile_file["Biradical Name"]
 
 # Streamlit app
 st.title("Biradical Structure Viewer")
 
 # Select biradical
-biradical_chosen = st.selectbox("Choose a biradical", options=biradical_choice, index=2)
+biradical_chosen = st.selectbox("Choose a biradical", options=biradical_choice)
 smiles = df_smile_file.loc[df_smile_file["Biradical Name"] == biradical_chosen, "SMILES Code"].values[0]
 
 st.divider()
