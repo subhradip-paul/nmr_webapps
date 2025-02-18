@@ -11,6 +11,36 @@ rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 from stmol import showmol, makeobj, add_hover
 
+def return_smiles_code_mol():
+    molecule_dict = {
+        "bTbK": "CC1(C)CC2(CC(C)(C)N1[O])OCC1(CO2)COC2(CC(C)(C)N([O])C(C)(C)C2)OC1",
+        "bTurea": "CC1(C)CC(NC(=O)NC2CC(C)(C)N([O])C(C)(C)C2)CC(C)(C)N1[O]",
+        "bCTbK": "[O]N1C2(CCCCC2)CC2(CC13CCCCC3)OCC1(CO2)COC2(CC3(CCCCC3)N([O])C3(CCCCC3)C2)OC1",
+        "bMTbK": "CC1CC(C)CC2(C1)CC1(CC3(CC(C)CC(C)C3)N2[O])OCC2(CO1)COC1(CC3(CC(C)CC(C)C3)N([O])C3(CC(C)CC(C)C3)C1)OC2",
+        "ABK": "[O]N1C2CCCC1CC1(C2)OCC2(CO1)COC1(CC3CCCC(C1)N3[O])OC2",
+        "ABU": "[O]N1C2CCCC1CC(NC(=O)NC1CC3CCCC(C1)N3[O])C2",
+        "TEKPol": "[O]N1C2(CCC(C3=CC=CC=C3)CC2)CC2(CC13CCC(C1=CC=CC=C1)CC3)OCC1(CO2)COC2(CC3(CCC(C4=CC=CC=C4)CC3)N([O])C3(CCC(C4=CC=CC=C4)CC3)C2)OC1",
+        "PyPol": "[2H]N(C(=O)NC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1",
+        "AMUPol": "[H]N(C(=O)N(CCOCCOCCOCCOC)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1",
+        "TEKPolCbm": "COC(=O)N(C(=O)OC1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1)C1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1",
+        "PyPolCbm": "[H]N(C(=O)OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1",
+        "AMUPolCbm": "N(CCOCOCOCOC)(C1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C(OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)=O",
+        "AsymPolPOK": "[K+].[O-]P(=O)([O-].[K+])OC1CCC2(CC1)CC(NC(=O)C1=CC(C)(C)N([O])C1(C)C)CC1(CCC(OP(=O)([O-].[K+])O)CC1)N2[O]",
+        "AsymPolTEK": "CC1(C)C=C(C(=O)NC2CC3(CCC(C4=CC=CC=C4)CC3)N([O])C3(CCC(C4=CC=CC=C4)CC3)C2)C(C)(C)N1[O]",
+        "HydroPol": "CC[11CH2]N(C(=O)N(C[C](C)O)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1",
+        "TEKPolCbo": "[O]N1C2(CCC(C3=CC=CC4=C3C=CC=C4)CC2)CC2(CC13CCC(C1=CC=CC4=C1C=CC=C4)CC3)OCC1(CO2)COC2(CC3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)N([O])C3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)C2)OC1",
+        "NaphPol": "[O]N1C2(CCC(C3=CC=CC=C3)CC2)CC(OC(=O)OC2CC3(CCC(C4=CC=CC=C4)CC3)N([O])C3(CCC(C4=CC=CC=C4)CC3)C2)CC12CCC(C1=CC=CC=C1)CC2",
+        "C-bcTol": "O=C(NC1CC2(CCC(O)CC2)N([O])C2(CCC(O)CC2)C1)NC1CC2(CCC(O)CC2)N([O])C2(CCC(O)CC2)C1",
+        "4-Oxo-TEMPO": "CC1(C)CC(=O)CC(C)(C)N1[O]",
+        "TEMPO": "CC1(C)CCCC(C)(C)N1[O]",
+        "Trityl": "C1=CC=C(C=C1)[C](C1=CC=CC=C1)C1=CC=CC=C1",
+        "TOTAPOL": "CC1(C)CC(CC(C)(C)N1[O])NCC(COC2CC(C)(C)N(C(C)(C)C2)[O])O"
+
+    }
+
+    # Convert dictionary to DataFrame
+    df = pd.DataFrame(list(molecule_dict.items()), columns=["Biradical Name", "SMILES Code"])
+    return df
 
 def plot_2d_struct_span_ketcher(smiles_2dfn):
     st.subheader("You can edit the structure of the molecule here")
@@ -45,9 +75,9 @@ def generate_3d_molecule(smiles_3dfn):
         return None
 
 # Load SMILES data
-script_dir = os.path.dirname(__file__)
-smile_file = os.path.join(script_dir, '../dep/smilecodes_biradicals.xlsx')
-df_smile_file = pd.read_excel(smile_file)
+# script_dir = os.path.dirname(__file__)
+# smile_file = os.path.join(script_dir, '../dep/smilecodes_biradicals.xlsx')
+df_smile_file = return_smiles_code_mol()
 df_smile_file = df_smile_file.sort_values(by="Biradical Name")
 biradical_choice = df_smile_file["Biradical Name"]
 
@@ -56,7 +86,7 @@ st.title("Biradical Structure Viewer")
 
 # Select biradical
 biradical_chosen = st.selectbox("Choose a biradical", options=biradical_choice, index=2)
-smiles = df_smile_file[df_smile_file["Biradical Name"] == biradical_chosen]['SMILES Code'].values[0]
+smiles = df_smile_file.loc[df_smile_file["Biradical Name"] == biradical_chosen, "SMILES Code"].values[0]
 
 st.divider()
 st.header("2D Structure Viewer")
