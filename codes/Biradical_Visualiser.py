@@ -21,7 +21,7 @@ def plot_2d_struct_span_ketcher(smiles_2dfn):
     if mol:
         img = Draw.MolToImage(mol,size=(400,400))
         st.image(img, caption=f"{biradical_chosen}", use_container_width=True)
-        return mol
+        return mol, ketcher_window_smiles
     else:
         raise Exception("Not a valid molecule")
 
@@ -60,7 +60,7 @@ smiles = df_smile_file[df_smile_file["Biradical Name"] == biradical_chosen]['SMI
 
 st.divider()
 st.header("2D Structure Viewer")
-mol_2d = plot_2d_struct_span_ketcher(smiles)
+mol_2d, ketcher_modified_smiles = plot_2d_struct_span_ketcher(smiles)
 
 
 # 3D structure viewer
@@ -73,7 +73,7 @@ The 3D view is generated using the package stmol:
 Nápoles-Duarte JM, Biswas A, Parker MI, Palomares-Baez JP, Chávez-Rojo MA and Rodríguez-Valdez LM (2022) Stmol: A component for building interactive molecular visualizations within streamlit web-applications. Front. Mol. Biosci. 9:990846. doi: 10.3389/fmolb.2022.990846
 ''')
 
-py3dmol_obj = generate_3d_molecule(smiles)
+py3dmol_obj = generate_3d_molecule(ketcher_modified_smiles)
 showmol(py3dmol_obj, height=500, width=800)
 
 st.divider()
