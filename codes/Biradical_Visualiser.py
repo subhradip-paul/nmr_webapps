@@ -9,7 +9,7 @@ from rdkit.Chem import rdDepictor
 import rdkit.Chem.Descriptors as MolDescriptors
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
-from stmol import showmol, makeobj, add_hover, speck_plot
+from stmol import showmol, makeobj, add_hover
 
 
 def return_smiles_code_mol():
