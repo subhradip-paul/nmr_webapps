@@ -9,7 +9,8 @@ from rdkit.Chem import rdDepictor
 import rdkit.Chem.Descriptors as MolDescriptors
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
-from stmol import showmol, makeobj, add_hover
+from stmol import showmol, makeobj, add_hover, speck_plot
+
 
 def return_smiles_code_mol():
     molecule_dict = {
@@ -35,8 +36,9 @@ def return_smiles_code_mol():
         "TEMPO": "CC1(C)CCCC(C)(C)N1[O]",
         "Trityl": "C1=CC=C(C=C1)[C](C1=CC=CC=C1)C1=CC=CC=C1",
         "TOTAPOL": "CC1(C)CC(CC(C)(C)N1[O])NCC(COC2CC(C)(C)N(C(C)(C)C2)[O])O",
-        "cAsymPolTEK": "C1C=CC(C2CCC3(N([O])C4(CCC(C5C=CC=CC=5)CC4)CC(NC(C4C5(CCCCC5)N([O])C5(CCCCC5)C=4)=O)C3)CC2)=CC=1"
-
+        "cAsymPolTEK": "C1C=CC(C2CCC3(N([O])C4(CCC(C5C=CC=CC=5)CC4)CC(NC(C4C5(CCCCC5)N([O])C5(CCCCC5)C=4)=O)C3)CC2)=CC=1",
+        "Ox063": "[O-]C(=O)C1=C2C(SC%87%88S2)=C([C@](C2=C3C(SC%89%90S3)=C(C(=O)[O-])C3=C2SC%91%92S3)C2=C3C(SC%93%94S3)=C(C(=O)[O-])C3=C2SC%95%96S3)C2=C1SC%97%98S2.[*:1]%97.[*:1]%98.[*:1]%95.[*:1]%96.[*:1]%93.[*:1]%94.[*:1]%91.[*:1]%92.[*:1]%89.[*:1]%90.[*:1]%87.[*:1]%88 |^1:10,$;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1$|",
+        "PyrrhoTriPol": "[O-]C(=O)C1=C2C(SC(C)(C)S2)=C([C@](C2=C3C(SC(C)(C)S3)=C(C(=O)[O-])C3=C2SC(C)(C)S3)C2=C3C(SC(C)(C)S3)=C(C(=O)ON3CCN(CC3)C(=O)C3C(N([O])C(C=3)(C)C)(C)C)C3=C2SC(C)(C)S3)C2=C1SC(C)(C)S2 |^1:12,55|",
     }
 
     # Convert dictionary to DataFrame
@@ -47,7 +49,10 @@ def return_smiles_code_mol():
 def plot_2d_struct_span_ketcher(smiles_2dfn):
     st.subheader("You can edit the structure of the molecule here")
     st.write('Credit: [Streamlit-Ketcher](https://github.com/mik-laj/streamlit-ketcher)')
-    ketcher_window_smiles = st_ketcher(smiles_2dfn)
+    mol = Chem.MolFromSmiles(smiles_2dfn)
+    mol = Chem.RemoveHs(mol)
+    smiles_noh = Chem.MolToSmiles(mol)
+    ketcher_window_smiles = st_ketcher(smiles_noh)
     mol = Chem.MolFromSmiles( ketcher_window_smiles )
     st.subheader("You can see the structure of the molecule here")
     if mol:
@@ -67,20 +72,21 @@ def generate_3d_molecule(smiles_3dfn):
         params.randomSeed = 0xf00d  # optional random seed for reproducibility
         AllChem.EmbedMolecule ( mol3d , params )
         AllChem.MMFFOptimizeMolecule ( mol3d )
+
         # Convert to MolBlock
-        mol_block = Chem.MolToMolBlock(mol3d)
-        py3dmol_obj_retn = makeobj ( mol_block , molformat='mol' , style='stick' , background='white' )
-        add_hover ( py3dmol_obj_retn , backgroundColor='white' , fontColor='black' )
-        return py3dmol_obj_retn
+        mol_no_h = Chem.RemoveAllHs(mol3d)
+        mol_block = Chem.MolToMolBlock(mol_no_h)
+        py3dmol_obj_return = makeobj ( mol_block , molformat='mol' , style='stick' , background='white' )
+        add_hover ( py3dmol_obj_return , backgroundColor='white' , fontColor='black' )
+        return py3dmol_obj_return
+        
     except Exception as e:
         st.error(f"Error generating 3D molecule: {e}")
         return None
 
 # Load SMILES data
-# script_dir = os.path.dirname(__file__)
-# smile_file = os.path.join(script_dir, '../dep/smilecodes_biradicals.xlsx')
+
 df_smile_file = return_smiles_code_mol()
-# df_smile_file = df_smile_file.sort_values(by="Biradical Name")
 biradical_choice = df_smile_file["Biradical Name"]
 
 # Streamlit app
@@ -107,7 +113,6 @@ Nápoles-Duarte JM, Biswas A, Parker MI, Palomares-Baez JP, Chávez-Rojo MA and 
 
 py3dmol_obj = generate_3d_molecule(ketcher_modified_smiles)
 showmol(py3dmol_obj, height=500, width=800)
-
 st.divider()
 st.header("Some Important Properties of the Biradical Structure")
 molecular_weight = MolDescriptors.ExactMolWt(mol_2d)

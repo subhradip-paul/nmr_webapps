@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="nmr_webapps" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (nmr_webapps)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="nmr_webapps" project-jdk-type="Python SDK" />
 </project>
