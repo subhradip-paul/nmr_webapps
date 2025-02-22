@@ -9,7 +9,7 @@ dnp_sample_prep = st.Page("codes/DNP_Sample_Preparation.py", title ="DNP Sample 
 dipole_calculator = st.Page("codes/Dipole_Calculator.py", title="Dipole to Distance and reverse", icon="↔")
 inadequate_efficiency_calc = st.Page("codes/INADEQUATE_Efficiency.py", title="Setting up INADEQUATE", icon ="⚖️")
 power_calculator = st.Page("codes/Power_Calculator.py", title ="Power and pulse lengths in NMR", icon="⚡")
-biradical_properties = st.Page("codes/Biradical_Visualiser.py", title = "Structure and Properties of DNP Radicals", icon="®")
+biradical_properties = st.Page("codes/Biradical_Visualiser.py", title = "Structure of DNP Radicals", icon="🧬")
 
 
 pg = st.navigation(

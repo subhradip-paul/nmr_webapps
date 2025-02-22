@@ -39,6 +39,7 @@ def return_smiles_code_mol():
         "cAsymPolTEK": "C1C=CC(C2CCC3(N([O])C4(CCC(C5C=CC=CC=5)CC4)CC(NC(C4C5(CCCCC5)N([O])C5(CCCCC5)C=4)=O)C3)CC2)=CC=1",
         "Ox063": "[O-]C(=O)C1=C2C(SC%87%88S2)=C([C@](C2=C3C(SC%89%90S3)=C(C(=O)[O-])C3=C2SC%91%92S3)C2=C3C(SC%93%94S3)=C(C(=O)[O-])C3=C2SC%95%96S3)C2=C1SC%97%98S2.[*:1]%97.[*:1]%98.[*:1]%95.[*:1]%96.[*:1]%93.[*:1]%94.[*:1]%91.[*:1]%92.[*:1]%89.[*:1]%90.[*:1]%87.[*:1]%88 |^1:10,$;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1$|",
         "PyrrhoTriPol": "[O-]C(=O)C1=C2C(SC(C)(C)S2)=C([C@](C2=C3C(SC(C)(C)S3)=C(C(=O)[O-])C3=C2SC(C)(C)S3)C2=C3C(SC(C)(C)S3)=C(C(=O)ON3CCN(CC3)C(=O)C3C(N([O])C(C=3)(C)C)(C)C)C3=C2SC(C)(C)S3)C2=C1SC(C)(C)S2 |^1:12,55|",
+        "PyrrhoTriPol-OMe": "CC1(Sc2c(c3SC(C)(C)Sc3c([C](c3c4SC(Sc4c(C(ON4CCN(C(C5C(C)(C)N([O])C(C)(C)C=5)=O)CC4)=O)c4SC(Sc34)(C)C)(C)C)c3c4SC(Sc4c(C(OC)=O)c4SC(Sc34)(C)C)(C)C)c2S1)C(OC)=O)C |^1:13,33|",
     }
 
     # Convert dictionary to DataFrame
