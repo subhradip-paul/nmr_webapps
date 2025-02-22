@@ -44,7 +44,7 @@ def return_smiles_code_mol():
 
     # Convert dictionary to DataFrame
     df = pd.DataFrame(list(molecule_dict.items()), columns=["Biradical Name", "SMILES Code"])
-    df = df.sort_values("Biradical Name")
+    df.sort_values(by = "Biradical Name", inplace = True, key = lambda col: col.str.lower())
     return df
 
 def plot_2d_struct_span_ketcher(smiles_2dfn):
