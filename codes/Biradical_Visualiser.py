@@ -77,9 +77,11 @@ def generate_3d_molecule(smiles_3dfn):
         # Convert to MolBlock
         mol_no_h = Chem.RemoveAllHs(mol3d)
         mol_block = Chem.MolToMolBlock(mol_no_h)
+        mol_xyz_noh = Chem.MolToXYZBlock(mol_no_h)
+        mol_xyz = Chem.MolToXYZBlock(mol3d)
         py3dmol_obj_return = makeobj ( mol_block , molformat='mol' , style='stick' , background='white' )
         add_hover ( py3dmol_obj_return , backgroundColor='white' , fontColor='black' )
-        return py3dmol_obj_return
+        return py3dmol_obj_return, mol_xyz_noh, mol_xyz
         
     except Exception as e:
         st.error(f"Error generating 3D molecule: {e}")
@@ -112,8 +114,22 @@ The 3D view is generated using the package stmol:
 Nápoles-Duarte JM, Biswas A, Parker MI, Palomares-Baez JP, Chávez-Rojo MA and Rodríguez-Valdez LM (2022) Stmol: A component for building interactive molecular visualizations within streamlit web-applications. Front. Mol. Biosci. 9:990846. doi: 10.3389/fmolb.2022.990846
 ''')
 
-py3dmol_obj = generate_3d_molecule(ketcher_modified_smiles)
+py3dmol_obj, xyz_without_H, xyz = generate_3d_molecule(ketcher_modified_smiles)
 showmol(py3dmol_obj, height=500, width=800)
+
+# Creating options to download the xyz coordinates
+
+col_xyz, col_xyz_noH = st.columns(2)
+
+with col_xyz_noH:
+    if st.button("Show XYZ coordinates without H"):
+        st.code(xyz_without_H)
+        st.download_button('Download the coordinates as a .xyz file', xyz_without_H, file_name=f'{biradical_chosen}_withoutH.xyz', mime='.xyz', key='biradical without H.xyz')
+with col_xyz:
+    if st.button("Show XYZ coordinates with H"):
+        st.code(xyz)
+        st.download_button('Download the coordinates as a .xyz file', xyz, file_name=f'{biradical_chosen}_withH.xyz', mime='.xyz', key='biradical.xyz')
+
 st.divider()
 st.header("Some Important Properties of the Biradical Structure")
 molecular_weight = MolDescriptors.ExactMolWt(mol_2d)
