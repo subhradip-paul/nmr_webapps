@@ -4,12 +4,10 @@ import numpy as np
 import os
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.Chem import Draw
 from rdkit.Chem import rdDepictor
-import rdkit.Chem.Descriptors as MolDescriptors
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
-from stmol import showmol, makeobj, add_hover
+from scipy.spatial.transform import Rotation as Rot
 
 script_dir = os.path.dirname(__file__)
 csv_file = os.path.join(script_dir, '../dep/NMR_freq_table.csv')
@@ -18,21 +16,36 @@ nuctable=pd.read_csv(csv_file)
 gyr_ratio_MHz_T=nuctable["GyrHz"]
 name_nuc=nuctable["Name"]
 
-def xyz_file_to_dipolar_data(xyzfile , nuc, num_nuc_func, table_of_nuclei) :
+def angle_between_vectors(vec1 , vec2) :
+    """
+    The function calculates the Euler angles between two vectors
+    in the zyz convention. The conventions can be found in scipy's transform module
+    :param vec1: a vector of the format [i1, j1, k1]
+    :param vec2: b vector of the format [i2, j2, k2]
+    :return: a vector of three Euler angles connecting the two vectors
+    """
+    vec1 = vec1 / np.linalg.norm ( vec1 )
+    vec2 = vec2 / np.linalg.norm ( vec2 )
+    cp = np.cross ( vec1 , vec2 )
+    dp = np.dot ( vec1 , vec2 )
+    cosine_ang = dp
+    ssc = np.array ( [ [ 0 , -cp[ 2 ] , cp[ 1 ] ] , [ cp[ 2 ] , 0 , -cp[ 0 ] ] , [ -cp[ 1 ] , cp[ 0 ] , 0 ] ] )
+    rot_mat = np.identity ( 3 ) + ssc + np.dot ( ssc , ssc ) / (1 + cosine_ang)
+    ff = Rot.from_matrix ( rot_mat )
+    euler_angles = ff.as_euler ( 'zyz' , degrees='True' )
+    return euler_angles
+
+def xyz_file_to_dipolar_data(xyzfile) :
     """
     The function takes an .xyz file of a molecular structure and calculates the
     dipolar coupling and Euler angle between the different nuclei in the principal axis frame.
-    :param nuc: the list of nuclei chosen
-    :param table_of_nuclei: The table containing all nuclear parameters
     :param xyzfile: Molecular structure file of the format .xyz
-    :param num_nuc_func: nuber of nuclei
     :return: a pandas Dataframe containing the pair of nuclei, the dipolar coupling in Hz,
     and the Euler angles between the two tensors.
     """
 
     mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
-    if len ( mol ) != num_nuc_func :
-        raise ValueError ( "The number of Nuclei do not match" )
+    nuc = mol['atom'].tolist()
     coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].to_numpy ()
     pl = 6.62607015e-34
     df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'j' , 'dip' , 'alpha' , 'beta' , 'gamma' ] )
@@ -40,7 +53,7 @@ def xyz_file_to_dipolar_data(xyzfile , nuc, num_nuc_func, table_of_nuclei) :
     gyr_atom = np.zeros(len(nuc))
 
     for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = table_of_nuclei[table_of_nuclei.Name.isin([nucleus]) == True]['GyrHz'].values
+        gyr_atom[idx] = nuctable[nuctable.Name.isin([nucleus]) == True]['GyrHz'].values
 
 
 
