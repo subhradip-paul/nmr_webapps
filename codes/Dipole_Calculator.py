@@ -19,6 +19,7 @@ nuctable=pd.read_csv(csv_file)
 gyr_ratio_MHz_T=nuctable["GyrHz"]
 name_nuc=nuctable["Name"]
 
+
 def angle_between_vectors(vec1 , vec2) :
     """
     The function calculates the Euler angles between two vectors
@@ -38,46 +39,115 @@ def angle_between_vectors(vec1 , vec2) :
     euler_angles = ff.as_euler ( 'zyz' , degrees='True' )
     return euler_angles
 
-def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms) :
+# def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms) :
+#     """
+#     The function takes an .xyz file of a molecular structure and calculates the
+#     dipolar coupling and Euler angle between the different nuclei in the principal axis frame.
+#     :param xyz_dataframe: Molecular structure file of the format of a dataframe
+#     :return: a pandas Dataframe containing the pair of nuclei, the dipolar coupling in Hz,
+#     and the Euler angles between the two tensors.
+#     """
+#
+#     # mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
+#     mol = xyz_dataframe
+#     nuc = mol['atom'].tolist()
+#     coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].astype( np.float64 ).to_numpy()
+#     pl = 6.62607015e-34
+#     df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'Nuc i',  'j', 'Nuc j' , 'Distance', 'Dipolar Coupling' , 'alpha' , 'beta' , 'gamma' ] )
+#
+#     gyr_atom = np.zeros(int(num_atoms))
+#     for idx, nucleus in enumerate(nuc):
+#         # gyr_atom[idx] = nuctable[nuctable.Symbol.isin([nucleus]) == True]['GyrHz'].values
+#         gyr_atom[idx] = choose_nucleus(nucleus)
+#
+#
+#
+#
+#     dist = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
+#     dip = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
+#     for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
+#         gyr1 = gyr_atom[ idx ] * 1e6
+#         for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
+#             dist[ idx ][ j ] = np.sqrt ( np.sum ( (coord_xyz[ idx ] - coord_xyz[ j ]) ** 2 ) )
+#             gyr2 = gyr_atom[ j ] * 1e6
+#             dip[ idx ][ j ] = -1e-7 * (gyr1 * gyr2 * pl) / ((dist[ idx ][ j ] * 1e-10) ** 3)
+#
+#     for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
+#         for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
+#             euler_angles = np.round ( angle_between_vectors ( coord_xyz[ idx ] , coord_xyz[ j ] ) , 2 )
+#             df_xyz_to_dip.loc[ idx * np.shape ( coord_xyz )[ 0 ] + j ] = [ idx , nuc[idx], j , nuc[j], np.round ( dist[idx][j] , 2 ),
+#                                                                            np.round ( dip[ idx ][ j ] , 2 ) ,
+#                                                                            *euler_angles ]
+#
+#     return df_xyz_to_dip
+
+
+def choose_nucleus(symbol):
+    """Returns the user's choice when multiple nucleus options exist."""
+    matches = nuctable[nuctable["Symbol"] == symbol]
+
+    if matches.shape[0] == 1:
+        return matches.iloc[0]["GyrHz"]  # Use the only available match
+
+    elif matches.shape[0] > 1:
+        # Let the user choose via a dropdown menu in Streamlit
+        choice = st.selectbox(f"Multiple isotopes found for {symbol}. Choose one:",
+                              matches["Name"].tolist(), key=symbol)
+        return matches[matches["Name"] == choice]["GyrHz"].values[0]
+
+    else:
+        st.warning(f"No match found for {symbol}. Assigning default value 0.0")
+        return 0.0  # Prevents IndexError
+
+
+def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms):
     """
     The function takes an .xyz file of a molecular structure and calculates the
-    dipolar coupling and Euler angle between the different nuclei in the principal axis frame.
-    :param xyz_dataframe: Molecular structure file of the format of a dataframe
-    :return: a pandas Dataframe containing the pair of nuclei, the dipolar coupling in Hz,
-    and the Euler angles between the two tensors.
+    dipolar coupling and Euler angle between different nuclei in the principal axis frame.
+
+    :param xyz_dataframe: DataFrame containing atomic symbols and coordinates
+    :param num_atoms: Number of atoms in the structure
+    :return: A pandas DataFrame with nuclear pairs, dipolar coupling, and Euler angles
     """
 
-    # mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
     mol = xyz_dataframe
     nuc = mol['atom'].tolist()
-    coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].astype( np.float64 ).to_numpy()
-    pl = 6.62607015e-34
-    df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'Nuc i',  'j', 'Nuc j' , 'Distance', 'Dipolar Coupling' , 'alpha' , 'beta' , 'gamma' ] )
+    coord_xyz = mol[['x', 'y', 'z']].astype(np.float64).to_numpy()
+    pl = 6.62607015e-34  # Planck constant
 
+    # DataFrame to store dipolar couplings and Euler angles
+    df_xyz_to_dip = pd.DataFrame(columns=['i', 'Nuc i', 'j', 'Nuc j', 'Distance (Å)',
+                                          'Dipolar Coupling (Hz)', 'alpha', 'beta', 'gamma'])
+
+    # Assign gyromagnetic ratios, handling missing nuclei
     gyr_atom = np.zeros(int(num_atoms))
     for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = nuctable[nuctable.Symbol.isin([nucleus]) == True]['GyrHz'].values
+        gyr_atom[idx] = choose_nucleus(nucleus)
+        if gyr_atom[idx] == 0.0:
+            st.warning(f"Warning: Nucleus {nucleus} not found in the database. Dipolar interaction may be incorrect.")
 
+    # Initialize distance and dipole matrices
+    dist = np.zeros((num_atoms, num_atoms))
+    dip = np.zeros((num_atoms, num_atoms))
 
+    # Compute distances and dipolar couplings
+    for idx in range(num_atoms):
+        gyr1 = gyr_atom[idx] * 1e6  # Convert to Hz
+        for j in range(idx + 1, num_atoms):
+            dist[idx, j] = np.linalg.norm(coord_xyz[idx] - coord_xyz[j])  # Distance in Å
+            gyr2 = gyr_atom[j] * 1e6
+            dip[idx, j] = -1e-7 * (gyr1 * gyr2 * pl) / ((dist[idx, j] * 1e-10) ** 3)  # Dipolar coupling in Hz
 
-    dist = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
-    dip = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
-    for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
-        gyr1 = gyr_atom[ idx ] * 1e6
-        for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
-            dist[ idx ][ j ] = np.sqrt ( np.sum ( (coord_xyz[ idx ] - coord_xyz[ j ]) ** 2 ) )
-            gyr2 = gyr_atom[ j ] * 1e6
-            dip[ idx ][ j ] = -1e-7 * (gyr1 * gyr2 * pl) / ((dist[ idx ][ j ] * 1e-10) ** 3)
-
-    for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
-        for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
-            euler_angles = np.round ( angle_between_vectors ( coord_xyz[ idx ] , coord_xyz[ j ] ) , 2 )
-            df_xyz_to_dip.loc[ idx * np.shape ( coord_xyz )[ 0 ] + j ] = [ idx , nuc[idx], j , nuc[j], np.round ( dist[idx][j] , 2 ),
-                                                                           np.round ( dip[ idx ][ j ] , 2 ) ,
-                                                                           *euler_angles ]
+    # Store results in DataFrame
+    for idx in range(num_atoms):
+        for j in range(idx + 1, num_atoms):
+            euler_angles = np.round(angle_between_vectors(coord_xyz[idx], coord_xyz[j]), 2)
+            df_xyz_to_dip.loc[len(df_xyz_to_dip)] = [
+                idx + 1, nuc[idx], j + 1, nuc[j], round(dist[idx, j], 2),
+                round(dip[idx, j], 2), *euler_angles
+            ]
 
     return df_xyz_to_dip
-
 
 
 def dist2dipole(choice_nuc1, choice_nuc2, distance):
@@ -159,10 +229,13 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
 
 
             xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
+            xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
+            num_atoms = int(xyz_lines[0])
 
-            num_atoms = int(xyz_string[0])
-            df = pd.read_csv(StringIO(xyz_string[1::]), delim_whitespace=True, names=["atom", "x", "y", "z"],
-                             index_col=False, dtype=str)
+            df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
+                             delim_whitespace=True,
+                             names=["atom", "x", "y", "z"],
+                             dtype={"atom": str, "x": float, "y": float, "z": float})
             st.write(df)
             df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
             st.write(df_xyz_dipole)
