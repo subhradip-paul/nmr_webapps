@@ -6,3 +6,4 @@ matplotlib>=3.10.0
 rdkit>=2024.9.5
 stmol>=0.0.9
 scipy>=1.15.1
+streamlit_ketcher>=0.0.1
