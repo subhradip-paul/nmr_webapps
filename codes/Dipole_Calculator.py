@@ -39,47 +39,7 @@ def angle_between_vectors(vec1 , vec2) :
     euler_angles = ff.as_euler ( 'zyz' , degrees='True' )
     return euler_angles
 
-# def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms) :
-#     """
-#     The function takes an .xyz file of a molecular structure and calculates the
-#     dipolar coupling and Euler angle between the different nuclei in the principal axis frame.
-#     :param xyz_dataframe: Molecular structure file of the format of a dataframe
-#     :return: a pandas Dataframe containing the pair of nuclei, the dipolar coupling in Hz,
-#     and the Euler angles between the two tensors.
-#     """
-#
-#     # mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
-#     mol = xyz_dataframe
-#     nuc = mol['atom'].tolist()
-#     coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].astype( np.float64 ).to_numpy()
-#     pl = 6.62607015e-34
-#     df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'Nuc i',  'j', 'Nuc j' , 'Distance', 'Dipolar Coupling' , 'alpha' , 'beta' , 'gamma' ] )
-#
-#     gyr_atom = np.zeros(int(num_atoms))
-#     for idx, nucleus in enumerate(nuc):
-#         # gyr_atom[idx] = nuctable[nuctable.Symbol.isin([nucleus]) == True]['GyrHz'].values
-#         gyr_atom[idx] = choose_nucleus(nucleus)
-#
-#
-#
-#
-#     dist = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
-#     dip = np.zeros ( [ np.shape ( coord_xyz )[ 0 ] , np.shape ( coord_xyz )[ 0 ] ] )
-#     for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
-#         gyr1 = gyr_atom[ idx ] * 1e6
-#         for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
-#             dist[ idx ][ j ] = np.sqrt ( np.sum ( (coord_xyz[ idx ] - coord_xyz[ j ]) ** 2 ) )
-#             gyr2 = gyr_atom[ j ] * 1e6
-#             dip[ idx ][ j ] = -1e-7 * (gyr1 * gyr2 * pl) / ((dist[ idx ][ j ] * 1e-10) ** 3)
-#
-#     for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
-#         for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
-#             euler_angles = np.round ( angle_between_vectors ( coord_xyz[ idx ] , coord_xyz[ j ] ) , 2 )
-#             df_xyz_to_dip.loc[ idx * np.shape ( coord_xyz )[ 0 ] + j ] = [ idx , nuc[idx], j , nuc[j], np.round ( dist[idx][j] , 2 ),
-#                                                                            np.round ( dip[ idx ][ j ] , 2 ) ,
-#                                                                            *euler_angles ]
-#
-#     return df_xyz_to_dip
+
 
 
 def choose_nucleus(symbol):
