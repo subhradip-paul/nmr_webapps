@@ -57,8 +57,12 @@ def plot_2d_struct_span_ketcher(smiles_2dfn):
     mol = Chem.MolFromSmiles( ketcher_window_smiles )
     st.subheader("You can see the structure of the molecule here")
     if mol:
-        img = Draw.MolToImage(mol,size=(400,400))
-        st.image(img, caption=f"{biradical_chosen}", use_container_width=True)
+        drawing_options = Draw.MolDrawOptions()
+        drawing_options.addStereoAnnotation = True
+        drawing_options.includeAtomTags = True
+        drawing_options.addAtomIndices = True
+        img = Draw.MolToImage(mol,size=(400,400), options=drawing_options)
+        st.image(img, caption=f"{biradical_chosen}", use_container_width='auto')
         return mol, ketcher_window_smiles
     else:
         raise Exception("Not a valid molecule")

@@ -8,6 +8,9 @@ from rdkit.Chem import rdDepictor
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 from scipy.spatial.transform import Rotation as Rot
+from io import StringIO
+from rdkit.Chem import Draw
+
 
 script_dir = os.path.dirname(__file__)
 csv_file = os.path.join(script_dir, '../dep/NMR_freq_table.csv')
@@ -35,25 +38,25 @@ def angle_between_vectors(vec1 , vec2) :
     euler_angles = ff.as_euler ( 'zyz' , degrees='True' )
     return euler_angles
 
-def xyz_file_to_dipolar_data(xyzfile) :
+def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms) :
     """
     The function takes an .xyz file of a molecular structure and calculates the
     dipolar coupling and Euler angle between the different nuclei in the principal axis frame.
-    :param xyzfile: Molecular structure file of the format .xyz
+    :param xyz_dataframe: Molecular structure file of the format of a dataframe
     :return: a pandas Dataframe containing the pair of nuclei, the dipolar coupling in Hz,
     and the Euler angles between the two tensors.
     """
 
-    mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
+    # mol = pd.read_csv ( xyzfile , sep=r'\s+' , skiprows=2 , names=[ 'atom' , 'x' , 'y' , 'z' ] , index_col=False )
+    mol = xyz_dataframe
     nuc = mol['atom'].tolist()
-    coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].to_numpy ()
+    coord_xyz = mol[ [ 'x' , 'y' , 'z' ] ].astype( np.float64 ).to_numpy()
     pl = 6.62607015e-34
-    df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'j' , 'dip' , 'alpha' , 'beta' , 'gamma' ] )
+    df_xyz_to_dip = pd.DataFrame ( columns=[ 'i' , 'Nuc i',  'j', 'Nuc j' , 'Distance', 'Dipolar Coupling' , 'alpha' , 'beta' , 'gamma' ] )
 
-    gyr_atom = np.zeros(len(nuc))
-
+    gyr_atom = np.zeros(int(num_atoms))
     for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = nuctable[nuctable.Name.isin([nucleus]) == True]['GyrHz'].values
+        gyr_atom[idx] = nuctable[nuctable.Symbol.isin([nucleus]) == True]['GyrHz'].values
 
 
 
@@ -69,7 +72,7 @@ def xyz_file_to_dipolar_data(xyzfile) :
     for idx in range ( 0 , np.shape ( coord_xyz )[ 0 ] ) :
         for j in range ( idx + 1 , np.shape ( coord_xyz )[ 0 ] ) :
             euler_angles = np.round ( angle_between_vectors ( coord_xyz[ idx ] , coord_xyz[ j ] ) , 2 )
-            df_xyz_to_dip.loc[ idx * np.shape ( coord_xyz )[ 0 ] + j ] = [ idx + 1 , j + 1 ,
+            df_xyz_to_dip.loc[ idx * np.shape ( coord_xyz )[ 0 ] + j ] = [ idx , nuc[idx], j , nuc[j], np.round ( dist[idx][j] , 2 ),
                                                                            np.round ( dip[ idx ][ j ] , 2 ) ,
                                                                            *euler_angles ]
 
@@ -85,10 +88,8 @@ def dist2dipole(choice_nuc1, choice_nuc2, distance):
     gyr1=gyr_ratio_MHz_T[nuc1idx[0]]*1e6
     gyr2=gyr_ratio_MHz_T[nuc2idx[0]]*1e6
 
-    dip=-1e-7*(gyr1*gyr2*pl)/((distance*1e-10) ** 3);
+    dip=-1e-7*(gyr1*gyr2*pl)/((distance*1e-10) ** 3)
     return dip
-    # print("The dipolar coupling = " + str(np.abs(np.round(dip,2))) + ' Hz')
-    # print("The dipolar coupling = " + str(np.abs(np.round(dip/1e3,2))) + ' kHz')
     
 
 def dipole2dist(choice_nuc1, choice_nuc2, dipole):
@@ -101,13 +102,11 @@ def dipole2dist(choice_nuc1, choice_nuc2, dipole):
 
     dist=1e10 * ((1e-7*abs((gyr1*gyr2*pl))/dipole) ** (1/3))
     return dist
-    # print("The distance  = " + str(np.abs(np.round(dist,2))) + ' A')
-    
 
-st.title(r"Dipole :arrows_counterclockwise: Distance")
+st.title(r"Dipolar Coupling Calculator")
 st.divider()
 
-choice_of_calculation = st.radio("What do you want to calculate?", [r"Dipole :arrows_counterclockwise: Distance", r'Dipolar Couplings from Structure :molecule:'], index=None)
+choice_of_calculation = st.radio(":rainbow[**What do you want to calculate?**]", [r"Dipole :arrows_counterclockwise: Distance", r'Dipolar Couplings from Structure'], index=None)
 
 if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
     choice_nuc1 = st.selectbox('Nucleus 1:', nuctable.Name.values.tolist(), index=2)
@@ -125,14 +124,49 @@ if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
         d=dipole2dist(choice_nuc1,choice_nuc2,dipole)
         st.divider()
         st.latex(r"\text{Distance  = }" + str(np.abs(np.round(d,2))) + r'\ {\AA}')
-elif choice_of_calculation == 'Dipolar Couplings from Structure :molecule:':
+elif choice_of_calculation == 'Dipolar Couplings from Structure':
     smiles = 'cc'
-    ketcher_window_smiles = st_ketcher(smiles)
-    mol = Chem.MolFromSmiles( ketcher_window_smiles)
-    params = AllChem.ETKDGv3()
-    params.randomSeed = 0xf00d  # optional random seed for reproducibility
-    AllChem.EmbedMolecule(mol, params)
-    AllChem.MMFFOptimizeMolecule(mol)
-    xyz_file = os.path.join(script_dir, '../dep/temp.xyz')
-    Chem.MolToXYZFile(mol, xyz_file)
+    smiles = st_ketcher(smiles)
+    if smiles is not None:
+        mol = Chem.MolFromSmiles( smiles)
+        if mol is not None:
+
+            # xyz_file = os.path.join(script_dir, '../dep/temp.xyz')
+            # Chem.MolToXYZFile(mol, xyz_file)
+            remove_1H = st.checkbox('Remove 1H')
+            if remove_1H:
+                mol3d = Chem.AddHs(mol)
+                params = AllChem.ETKDGv3()
+                params.randomSeed = 0xf00d  # optional random seed for reproducibility
+                AllChem.EmbedMolecule(mol3d, params)
+                AllChem.MMFFOptimizeMolecule(mol3d)
+                mol3d = Chem.RemoveAllHs(mol3d)
+                mol_to_xyz = mol3d
+            else:
+                mol3d = Chem.AddHs(mol)
+                params = AllChem.ETKDGv3()
+                params.randomSeed = 0xf00d  # optional random seed for reproducibility
+                AllChem.EmbedMolecule(mol3d, params)
+                AllChem.MMFFOptimizeMolecule(mol3d)
+                mol_to_xyz = mol3d
+
+            # Draw the final molecule
+            drawing_options = Draw.MolDrawOptions()
+            drawing_options.addStereoAnnotation = True
+            drawing_options.includeAtomTags = True
+            img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
+            st.image(img, use_container_width='auto')
+
+
+            xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
+
+            num_atoms = int(xyz_string[0])
+            df = pd.read_csv(StringIO(xyz_string[1::]), delim_whitespace=True, names=["atom", "x", "y", "z"],
+                             index_col=False, dtype=str)
+            st.write(df)
+            df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
+            st.write(df_xyz_dipole)
+
+
+
 
