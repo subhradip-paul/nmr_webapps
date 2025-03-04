@@ -17,27 +17,32 @@ mag_field=st.number_input('Enter a magnetic field in T: ', value = 9.4)
 
 user_input=re.split(r'(\d+|[A-Za-z]+)', nuc)
 if len(user_input) == 3:
-    nuc_choice=df.loc[df['Nucleus'] == user_input[1]]
-    st.dataframe(nuc_choice.iloc[:,:11], hide_index=True)
+    nuc_choice = df.loc[df['Nucleus'] == user_input[1]]
+    st.dataframe(nuc_choice.iloc[:, :11], hide_index=True)
     st.caption("Properties of the Nucleus, Database from [ssNake](https://github.com/smeerten/ssnake).")
-    larmor_freq=nuc_choice["Gamma (MHz/T)"].to_numpy().astype(float)
-    st.write(pd.DataFrame({
-    'Mass Num': nuc_choice["Mass"],
-    'Nucleus' : nuc_choice["Nucleus"],
-    'Larmor Freq (MHz)': larmor_freq*mag_field,
-    }).to_markdown(index=False))
+
+    larmor_freq = nuc_choice["Gamma (MHz/T)"].to_numpy().astype(float)
+    result_df = pd.DataFrame({
+        'Nucleus': nuc_choice["Mass"] + nuc_choice["Nucleus"],
+        'Larmor Freq (MHz)': larmor_freq * mag_field,
+    })
+
+    st.dataframe(result_df, hide_index=True)  # Display as a table
     st.caption("Larmor Frequency :tornado:")
+
 else:
-    nuc_choice = df.loc[df['Nucleus'] == user_input[3]] 
+    nuc_choice = df.loc[df['Nucleus'] == user_input[3]]
     mass_choice = nuc_choice.loc[nuc_choice['Mass'] == user_input[1]]
-    st.dataframe(nuc_choice.iloc[:,:11], hide_index=True)
+    st.dataframe(nuc_choice.iloc[:, :11], hide_index=True)
     st.caption("Properties of the Nucleus, Database from [ssNake](https://github.com/smeerten/ssnake).")
-    larmor_freq=mass_choice["Gamma (MHz/T)"].to_numpy().astype(float)
-    st.write(pd.DataFrame({
-    'Mass Num': mass_choice["Mass"],
-    'Nucleus' : mass_choice["Nucleus"],
-    'Larmor Freq (MHz)': larmor_freq*mag_field,
-    }).to_markdown(index=False))
+
+    larmor_freq = mass_choice["Gamma (MHz/T)"].to_numpy().astype(float)
+    result_df = pd.DataFrame({
+        'Nucleus': mass_choice["Mass"] + mass_choice["Nucleus"],
+        'Larmor Freq (MHz)': larmor_freq * mag_field,
+    })
+
+    st.dataframe(result_df, hide_index=True)  # Display as a table
     st.caption("Larmor Frequency :tornado:")
 
     

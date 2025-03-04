@@ -42,7 +42,7 @@ def angle_between_vectors(vec1 , vec2) :
 
 
 
-def choose_nucleus(symbol):
+def choose_nucleus(symbol, key_gen):
     """Returns the user's choice when multiple nucleus options exist."""
     matches = nuctable[nuctable["Symbol"] == symbol]
 
@@ -52,7 +52,7 @@ def choose_nucleus(symbol):
     elif matches.shape[0] > 1:
         # Let the user choose via a dropdown menu in Streamlit
         choice = st.selectbox(f"Multiple isotopes found for {symbol}. Choose one:",
-                              matches["Name"].tolist(), key=symbol)
+                              matches["Name"].tolist(), key=str(key_gen) + symbol)
         return matches[matches["Name"] == choice]["GyrHz"].values[0]
 
     else:
@@ -82,7 +82,7 @@ def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms):
     # Assign gyromagnetic ratios, handling missing nuclei
     gyr_atom = np.zeros(int(num_atoms))
     for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = choose_nucleus(nucleus)
+        gyr_atom[idx] = choose_nucleus(nucleus, idx)
         if gyr_atom[idx] == 0.0:
             st.warning(f"Warning: Nucleus {nucleus} not found in the database. Dipolar interaction may be incorrect.")
 
