@@ -8,15 +8,14 @@ sample_temp_kbr = st.Page("codes/Sample_Temp_from_KBr_T1.py", title ="Sample Tem
 dnp_sample_prep = st.Page("codes/DNP_Sample_Preparation.py", title ="DNP Sample Preparation", icon="🍲")
 dipole_calculator = st.Page("codes/Dipole_Calculator.py", title="Dipolar Coupling Calculator", icon="↔")
 inadequate_efficiency_calc = st.Page("codes/INADEQUATE_Efficiency.py", title="Setting up INADEQUATE", icon ="⚖️")
-power_calculator = st.Page("codes/Power_Calculator.py", title ="Power and pulse lengths in NMR", icon="⚡")
 biradical_properties = st.Page("codes/Biradical_Visualiser.py", title = "Structure of DNP Radicals", icon="🧬")
 
 
 pg = st.navigation(
 {
         "Home": [home],
-        "Nuclei in NMR": [nuclear_properties],
-        "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, dipole_calculator, inadequate_efficiency_calc, power_calculator],
+        "Nuclei and Interactions in NMR": [nuclear_properties, dipole_calculator],
+        "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, inadequate_efficiency_calc],
         "DNP Related": [dnp_sample_prep, biradical_properties],
     }
 )
