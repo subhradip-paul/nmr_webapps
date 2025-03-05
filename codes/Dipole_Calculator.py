@@ -9,8 +9,8 @@ rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 from scipy.spatial.transform import Rotation as Rot
 from io import StringIO
-from rdkit.Chem import Draw
-
+import py3Dmol
+from stmol import showmol, add_hover
 
 script_dir = os.path.dirname(__file__)
 csv_file = os.path.join(script_dir, '../dep/NMR_freq_table.csv')
@@ -19,6 +19,27 @@ nuctable=pd.read_csv(csv_file)
 gyr_ratio_MHz_T=nuctable["GyrHz"]
 name_nuc=nuctable["Name"]
 
+
+def render3dmol(mol, style):
+    # Convert RDKit molecule to MOL block format
+    mol_block = Chem.MolToMolBlock(mol)
+
+    xyzview = py3Dmol.view()
+    xyzview.addModel(mol_block, 'mol')  # Pass MOL block instead of RDKit Mol object
+
+    # Set molecular visualization style
+    if style == 'stick':
+        xyzview.setStyle({'stick': {}})
+    elif style == 'ball and stick':
+        xyzview.setStyle({'sphere': {'scale': 0.3}, 'stick': {}})
+    elif style == 'sphere':
+        xyzview.setStyle({'sphere': {}})
+
+    colour_bg = st.color_picker('Pick a background colour', '#9DEBF7')
+    xyzview.setBackgroundColor(colour_bg)
+    xyzview.zoomTo()
+    add_hover(xyzview)
+    showmol(xyzview,height=500,width=800)
 
 def angle_between_vectors(vec1 , vec2) :
     """
@@ -42,7 +63,7 @@ def angle_between_vectors(vec1 , vec2) :
 
 
 
-def choose_nucleus(symbol):
+def choose_nucleus(symbol, key_gen):
     """Returns the user's choice when multiple nucleus options exist."""
     matches = nuctable[nuctable["Symbol"] == symbol]
 
@@ -52,7 +73,7 @@ def choose_nucleus(symbol):
     elif matches.shape[0] > 1:
         # Let the user choose via a dropdown menu in Streamlit
         choice = st.selectbox(f"Multiple isotopes found for {symbol}. Choose one:",
-                              matches["Name"].tolist(), key=symbol)
+                              matches["Name"].tolist(), key=str(key_gen) + symbol)
         return matches[matches["Name"] == choice]["GyrHz"].values[0]
 
     else:
@@ -82,7 +103,7 @@ def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms):
     # Assign gyromagnetic ratios, handling missing nuclei
     gyr_atom = np.zeros(int(num_atoms))
     for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = choose_nucleus(nucleus)
+        gyr_atom[idx] = choose_nucleus(nucleus, idx)
         if gyr_atom[idx] == 0.0:
             st.warning(f"Warning: Nucleus {nucleus} not found in the database. Dipolar interaction may be incorrect.")
 
@@ -172,6 +193,10 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 AllChem.MMFFOptimizeMolecule(mol3d)
                 mol3d = Chem.RemoveAllHs(mol3d)
                 mol_to_xyz = mol3d
+                # Dropdown for style selection
+                style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
+                render3dmol(mol3d, style)
+
             else:
                 mol3d = Chem.AddHs(mol)
                 params = AllChem.ETKDGv3()
@@ -179,13 +204,18 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 AllChem.EmbedMolecule(mol3d, params)
                 AllChem.MMFFOptimizeMolecule(mol3d)
                 mol_to_xyz = mol3d
+                # Dropdown for style selection
+                style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
+                render3dmol(mol3d, style)
 
-            # Draw the final molecule
-            drawing_options = Draw.MolDrawOptions()
-            drawing_options.addStereoAnnotation = True
-            drawing_options.includeAtomTags = True
-            img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
-            st.image(img, use_container_width='auto')
+
+            # # Draw the final molecule
+            # drawing_options = Draw.MolDrawOptions()
+            # drawing_options.addStereoAnnotation = True
+            # drawing_options.includeAtomTags = True
+            # drawing_options.includeAtomNumbers = True
+            # img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
+            # st.image(img, use_container_width='auto')
 
 
             xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
@@ -193,7 +223,7 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
             num_atoms = int(xyz_lines[0])
 
             df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
-                             delim_whitespace=True,
+                             sep=r"\s+",
                              names=["atom", "x", "y", "z"],
                              dtype={"atom": str, "x": float, "y": float, "z": float})
             st.write(df)
