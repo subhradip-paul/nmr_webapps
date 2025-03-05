@@ -8,3 +8,4 @@ stmol>=0.0.9
 scipy>=1.15.1
 streamlit_ketcher>=0.0.1
 ipython_genutils>=0.0.1
+py3dmol>=2.4.2
