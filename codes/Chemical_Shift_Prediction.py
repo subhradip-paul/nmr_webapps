@@ -1,17 +1,9 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import pandas as pd
-import numpy as np
-import os
 from rdkit import Chem
-from rdkit.Chem import AllChem
 from rdkit.Chem import rdDepictor
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
-from scipy.spatial.transform import Rotation as Rot
-from io import StringIO
-import py3Dmol
-from stmol import showmol, add_hover
+
 from chembl_structure_pipeline import standardizer
 
 
@@ -41,3 +33,7 @@ with col13C:
 with col1H:
     create_html_ref_1H = f"https://www.nmrdb.org/service.php?name=nmr-1h-prediction&smiles={smiles_with_H}"
     st.page_link(create_html_ref_1H, label="1H Chemical shift prediction (nmrdb)", icon="🤖", help=None, disabled=False, use_container_width=None)
+
+st.warning('The chemical shifts are mostly for solution NMR')
+
+st.info('For other nuclei and for more comprehensive list of molecules, visit the website: https://nmrshiftdb.nmr.uni-koeln.de')
