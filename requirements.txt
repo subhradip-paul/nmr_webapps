@@ -10,3 +10,4 @@ streamlit_ketcher>=0.0.1
 ipython_genutils>=0.0.1
 py3dmol>=2.4.2
 chembl_structure_pipeline>=1.2.0
+polars>=1.25.0
