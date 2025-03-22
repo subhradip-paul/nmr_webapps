@@ -176,59 +176,73 @@ if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
         st.divider()
         st.latex(r"\text{Distance  = }" + str(np.abs(np.round(d,2))) + r'\ {\AA}')
 elif choice_of_calculation == 'Dipolar Couplings from Structure':
-    smiles = 'cc'
-    smiles = st_ketcher(smiles)
-    if smiles is not None:
-        mol = Chem.MolFromSmiles( smiles)
-        if mol is not None:
+    options = st.selectbox("Draw a structure or manually enter *xyz* coordinates", options=["Draw", "Manual"], index=0)
+    if options == "Manual":
+        xyz_lines = st.file_uploader("Upload an xyz coordinates file", type="xyz")
+        if xyz_lines is not None:
+            df = pd.read_csv ( xyz_lines , skiprows=2,
+                               sep=r"\s+" ,
+                               names=[ "atom" , "x" , "y" , "z" ] ,
+                               dtype={"atom" : str , "x" : float , "y" : float , "z" : float} )
+            st.data_editor(df)
+            num_atoms = len(df)
+            df_xyz_dipole = xyz_file_to_dipolar_data ( xyz_dataframe=df , num_atoms=num_atoms )
+            st.write ( df_xyz_dipole )
 
-            # xyz_file = os.path.join(script_dir, '../dep/temp.xyz')
-            # Chem.MolToXYZFile(mol, xyz_file)
-            remove_1H = st.checkbox('Remove 1H')
-            if remove_1H:
-                mol3d = Chem.AddHs(mol)
-                params = AllChem.ETKDGv3()
-                params.randomSeed = 0xf00d  # optional random seed for reproducibility
-                AllChem.EmbedMolecule(mol3d, params)
-                AllChem.MMFFOptimizeMolecule(mol3d)
-                mol3d = Chem.RemoveAllHs(mol3d)
-                mol_to_xyz = mol3d
-                # Dropdown for style selection
-                style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
-                render3dmol(mol3d, style)
+    else:
+        smiles = 'cc'
+        smiles = st_ketcher(smiles)
+        if smiles is not None:
+            mol = Chem.MolFromSmiles( smiles)
+            if mol is not None:
 
-            else:
-                mol3d = Chem.AddHs(mol)
-                params = AllChem.ETKDGv3()
-                params.randomSeed = 0xf00d  # optional random seed for reproducibility
-                AllChem.EmbedMolecule(mol3d, params)
-                AllChem.MMFFOptimizeMolecule(mol3d)
-                mol_to_xyz = mol3d
-                # Dropdown for style selection
-                style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
-                render3dmol(mol3d, style)
+                # xyz_file = os.path.join(script_dir, '../dep/temp.xyz')
+                # Chem.MolToXYZFile(mol, xyz_file)
+                remove_1H = st.checkbox('Remove 1H')
+                if remove_1H:
+                    mol3d = Chem.AddHs(mol)
+                    params = AllChem.ETKDGv3()
+                    params.randomSeed = 0xf00d  # optional random seed for reproducibility
+                    AllChem.EmbedMolecule(mol3d, params)
+                    AllChem.MMFFOptimizeMolecule(mol3d)
+                    mol3d = Chem.RemoveAllHs(mol3d)
+                    mol_to_xyz = mol3d
+                    # Dropdown for style selection
+                    style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
+                    render3dmol(mol3d, style)
 
-
-            # # Draw the final molecule
-            # drawing_options = Draw.MolDrawOptions()
-            # drawing_options.addStereoAnnotation = True
-            # drawing_options.includeAtomTags = True
-            # drawing_options.includeAtomNumbers = True
-            # img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
-            # st.image(img, use_container_width='auto')
+                else:
+                    mol3d = Chem.AddHs(mol)
+                    params = AllChem.ETKDGv3()
+                    params.randomSeed = 0xf00d  # optional random seed for reproducibility
+                    AllChem.EmbedMolecule(mol3d, params)
+                    AllChem.MMFFOptimizeMolecule(mol3d)
+                    mol_to_xyz = mol3d
+                    # Dropdown for style selection
+                    style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
+                    render3dmol(mol3d, style)
 
 
-            xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
-            xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
-            num_atoms = int(xyz_lines[0])
+                # # Draw the final molecule
+                # drawing_options = Draw.MolDrawOptions()
+                # drawing_options.addStereoAnnotation = True
+                # drawing_options.includeAtomTags = True
+                # drawing_options.includeAtomNumbers = True
+                # img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
+                # st.image(img, use_container_width='auto')
 
-            df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
-                             sep=r"\s+",
-                             names=["atom", "x", "y", "z"],
-                             dtype={"atom": str, "x": float, "y": float, "z": float})
-            st.write(df)
-            df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
-            st.write(df_xyz_dipole)
+
+                xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
+                xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
+                num_atoms = int(xyz_lines[0])
+            if st.button("Calculate"):
+                df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
+                                 sep=r"\s+",
+                                 names=["atom", "x", "y", "z"],
+                                 dtype={"atom": str, "x": float, "y": float, "z": float})
+                st.write(df)
+                df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
+                st.write(df_xyz_dipole)
 
 
 
