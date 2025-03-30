@@ -33,18 +33,14 @@ smiles_with_H = Chem.MolToSmiles(mol_with_H)
 
 st.info('Before chemical shift prediction press the apply button')
 
-col13C, col1H = st.columns(2)
 
 
-with col13C:
-    create_html_ref_13C = f"https://www.nmrdb.org/service.php?name=nmr-13c-prediction&smiles={smiles}"
-    st.link_button("13C Chemical shift prediction (nmrdb)", create_html_ref_13C,
-                   help='Clicking here will open an external page where the chemical shifts will be predicted',
-                   type='primary', icon=":material/arrow_circle_down:", disabled=False, use_container_width=True)
-with col1H:
-    create_html_ref_1H = f"https://www.nmrdb.org/service.php?name=nmr-1h-prediction&smiles={smiles_with_H}"
-    st.link_button("1H Chemical shift prediction (nmrdb)", create_html_ref_1H, help = 'Clicking here will open an external page where the chemical shifts will be predicted',
-                   type = 'primary', icon=":material/arrow_circle_up:", disabled=False, use_container_width=True)
+# NMRium 13C and 1H prediction
+nmrium_13C_url = f"https://www.nmrium.org/predict?smiles={smiles_with_H}"
+st.link_button("Chemical shift prediction (NMRium)", nmrium_13C_url,
+               help='Clicking here will open an external page where the chemical shifts will be predicted',
+               type='primary', icon=":material/arrow_circle_down:", disabled=False, use_container_width=True)
+
 
 st.warning('The chemical shifts are mostly for solution NMR')
 
