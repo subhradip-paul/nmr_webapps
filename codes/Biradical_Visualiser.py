@@ -7,9 +7,13 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import Draw
 from rdkit.Chem import rdDepictor
 import rdkit.Chem.Descriptors as MolDescriptors
+import rdkit.Chem.rdMolDescriptors as rdMolDescriptors
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 from stmol import showmol, makeobj, add_hover
+from chembl_structure_pipeline import standardizer
+import py3Dmol
+
 
 
 def return_smiles_code_mol():
@@ -26,7 +30,7 @@ def return_smiles_code_mol():
         "TEKPolCbm": "COC(=O)N(C(=O)OC1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1)C1CC2(CCC(C3=CC=CC=C3)CC2)N([O])C2(CCC(C3=CC=CC=C3)CC2)C1",
         "PyPolCbm": "[H]N(C(=O)OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C1CC2(CCOCC2)N([O])C2(CCOCC2)C1",
         "AMUPolCbm": "N(CCOCOCOCOC)(C1CC2(CCOCC2)N([O])C2(CCOCC2)C1)C(OC1CC2(CCOCC2)N([O])C2(CCOCC2)C1)=O",
-        "AsymPolPOK": "[O-]P(OC1CCC2(N([O])C3(CCC(OP([O-])([O-])=O)CC3)CC(NC(C3C(C)(C)N([O])C(C)(C)C=3)=O)C2)CC1)([O-])=O",
+        "AsymPolPOK": "[K+][O-]P(=O)([O-][K+])OC1CCC2(CC(NC(=O)C3=CC(C)(C)N([O])C3(C)C)CC3(CCC(OP(=O)([O-][K+])[O-][K+])CC3)N2[O])CC1 |^1:22,41|",
         "AsymPolTEK": "CC1(C)C=C(C(=O)NC2CC3(CCC(C4=CC=CC=C4)CC3)N([O])C3(CCC(C4=CC=CC=C4)CC3)C2)C(C)(C)N1[O]",
         "HydroPol": "CC[11CH2]N(C(=O)N(C[C](C)O)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1)C1C[C@]2(CC(C)OC(C)C2)N([O])[C@@]2(CC(C)OC(C)C2)C1",
         "TEKPolCbo": "[O]N1C2(CCC(C3=CC=CC4=C3C=CC=C4)CC2)CC2(CC13CCC(C1=CC=CC4=C1C=CC=C4)CC3)OCC1(CO2)COC2(CC3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)N([O])C3(CCC(C4=CC=CC5=C4C=CC=C5)CC3)C2)OC1",
@@ -40,6 +44,7 @@ def return_smiles_code_mol():
         "Ox063": "[O-]C(=O)C1=C2C(SC%87%88S2)=C([C@](C2=C3C(SC%89%90S3)=C(C(=O)[O-])C3=C2SC%91%92S3)C2=C3C(SC%93%94S3)=C(C(=O)[O-])C3=C2SC%95%96S3)C2=C1SC%97%98S2.[*:1]%97.[*:1]%98.[*:1]%95.[*:1]%96.[*:1]%93.[*:1]%94.[*:1]%91.[*:1]%92.[*:1]%89.[*:1]%90.[*:1]%87.[*:1]%88 |^1:10,$;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1;_R1$|",
         "PyrrhoTriPol": "[O-]C(=O)C1=C2C(SC(C)(C)S2)=C([C@](C2=C3C(SC(C)(C)S3)=C(C(=O)[O-])C3=C2SC(C)(C)S3)C2=C3C(SC(C)(C)S3)=C(C(=O)ON3CCN(CC3)C(=O)C3C(N([O])C(C=3)(C)C)(C)C)C3=C2SC(C)(C)S3)C2=C1SC(C)(C)S2 |^1:12,55|",
         "PyrrhoTriPol-OMe": "CC1(Sc2c(c3SC(C)(C)Sc3c([C](c3c4SC(Sc4c(C(ON4CCN(C(C5C(C)(C)N([O])C(C)(C)C=5)=O)CC4)=O)c4SC(Sc34)(C)C)(C)C)c3c4SC(Sc4c(C(OC)=O)c4SC(Sc34)(C)C)(C)C)c2S1)C(OC)=O)C |^1:13,33|",
+        "BDPA": "[C](/C(/C1C=CC=CC=1)=C1\C2C=CC=CC=2C2C=CC=CC\\1=2)1C2C=CC=CC=2C2C=CC=CC1=2 |^1:0|",
     }
 
     # Convert dictionary to DataFrame
@@ -50,11 +55,14 @@ def return_smiles_code_mol():
 def plot_2d_struct_span_ketcher(smiles_2dfn):
     st.subheader("You can edit the structure of the molecule here")
     st.write('Credit: [Streamlit-Ketcher](https://github.com/mik-laj/streamlit-ketcher)')
-    mol = Chem.MolFromSmiles(smiles_2dfn)
-    mol = Chem.RemoveHs(mol)
-    smiles_noh = Chem.MolToSmiles(mol)
-    ketcher_window_smiles = st_ketcher(smiles_noh)
+    ketcher_window_smiles = st_ketcher(smiles_2dfn)
     mol = Chem.MolFromSmiles( ketcher_window_smiles )
+    mol = Chem.MolToMolBlock(mol)
+    std_molblock = standardizer.standardize_molblock(mol)
+    mol = Chem.MolFromMolBlock(std_molblock)
+    mol = Chem.RemoveHs(mol)
+    smiles_modified = Chem.MolToSmiles(mol)
+
     st.subheader("You can see the structure of the molecule here")
     if mol:
         drawing_options = Draw.MolDrawOptions()
@@ -63,13 +71,13 @@ def plot_2d_struct_span_ketcher(smiles_2dfn):
         drawing_options.addAtomIndices = True
         img = Draw.MolToImage(mol,size=(400,400), options=drawing_options)
         st.image(img, caption=f"{biradical_chosen}", use_container_width='auto')
-        return mol, ketcher_window_smiles
+        return mol, smiles_modified
     else:
         raise Exception("Not a valid molecule")
 
 
 
-def generate_3d_molecule(smiles_3dfn):
+def generate_3d_molecule(smiles_3dfn, style):
     try:
         mol = Chem.MolFromSmiles( smiles_3dfn )
         mol3d = Chem.AddHs(mol)
@@ -81,11 +89,27 @@ def generate_3d_molecule(smiles_3dfn):
         # Convert to MolBlock
         mol_no_h = Chem.RemoveAllHs(mol3d)
         mol_block = Chem.MolToMolBlock(mol_no_h)
+        xyzview = py3Dmol.view()
+        xyzview.addModel(mol_block, 'mol')  # Pass MOL block instead of RDKit Mol object
+
+        # Set molecular visualization style
+        if style == 'stick':
+            xyzview.setStyle({'stick': {}})
+        elif style == 'ball and stick':
+            xyzview.setStyle({'sphere': {'scale': 0.3}, 'stick': {}})
+        elif style == 'sphere':
+            xyzview.setStyle({'sphere': {}})
+
+        colour_bg = st.color_picker('Pick a background colour', '#9DEBF7')
+        xyzview.setBackgroundColor(colour_bg)
+        xyzview.zoomTo()
+        add_hover(xyzview)
+        showmol(xyzview, height=500, width=800)
+
         mol_xyz_noh = Chem.MolToXYZBlock(mol_no_h)
         mol_xyz = Chem.MolToXYZBlock(mol3d)
-        py3dmol_obj_return = makeobj ( mol_block , molformat='mol' , style='stick' , background='white' )
-        add_hover ( py3dmol_obj_return , backgroundColor='white' , fontColor='black' )
-        return py3dmol_obj_return, mol_xyz_noh, mol_xyz
+
+        return mol_xyz_noh, mol_xyz
         
     except Exception as e:
         st.error(f"Error generating 3D molecule: {e}")
@@ -117,9 +141,8 @@ It is not a DFT optimised structure. Please consider it as a representative stru
 The 3D view is generated using the package stmol:
 Nápoles-Duarte JM, Biswas A, Parker MI, Palomares-Baez JP, Chávez-Rojo MA and Rodríguez-Valdez LM (2022) Stmol: A component for building interactive molecular visualizations within streamlit web-applications. Front. Mol. Biosci. 9:990846. doi: 10.3389/fmolb.2022.990846
 ''')
-
-py3dmol_obj, xyz_without_H, xyz = generate_3d_molecule(ketcher_modified_smiles)
-showmol(py3dmol_obj, height=500, width=800)
+style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
+xyz_without_H, xyz = generate_3d_molecule(ketcher_modified_smiles, style)
 
 # Creating options to download the xyz coordinates
 
@@ -137,9 +160,8 @@ with col_xyz:
 st.divider()
 st.header("Some Important Properties of the Biradical Structure")
 molecular_weight = MolDescriptors.ExactMolWt(mol_2d)
-num_aromatic_rings = MolDescriptors.NumAromaticRings(mol_2d)
-num_aliphatic_rings = MolDescriptors.NumRadicalElectrons(mol_2d)
-num_rings = MolDescriptors.NumAliphaticRings(mol_2d)
+num_rotable_bonds = rdMolDescriptors.CalcNumRotatableBonds(mol_2d, strict=False)
+
 num_radicals = MolDescriptors.NumRadicalElectrons(mol_2d)
 
 st.subheader(f'{biradical_chosen}')
@@ -147,11 +169,8 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.metric(label="Molecular Weight", value=round(molecular_weight, 2))
-    st.metric(label="Number of Aromatic Rings", value=num_aromatic_rings)
-
 with col2:
-    st.metric(label="Number of Aliphatic Rings", value=num_aliphatic_rings)
-    st.metric(label="Total Number of Rings", value=num_rings)
+    st.metric(label="Number of Rotatable Bonds", value=num_rotable_bonds)
 
 st.metric(label="Number of Radical Electrons", value=num_radicals)
 
