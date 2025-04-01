@@ -11,7 +11,7 @@ st.title("Chemical Shift")
 
 st.header("Isotropic Chemical Shift Prediction")
 
-st.markdown("#### The chemical shift prediction is done in nmrdb")
+st.markdown("#### The chemical shift prediction is done in NMRium")
 
 # Generate the molecule including drawing option
 smiles = 'CN1C=NC2=C1C(=O)N(C(=O)N2C)C'
@@ -40,6 +40,7 @@ nmrium_13C_url = f"https://www.nmrium.org/predict?smiles={smiles_with_H}"
 st.link_button("Chemical shift prediction (NMRium)", nmrium_13C_url,
                help='Clicking here will open an external page where the chemical shifts will be predicted',
                type='primary', icon=":material/arrow_circle_down:", disabled=False, use_container_width=True)
+
 
 
 st.warning('The chemical shifts are mostly for solution NMR')
