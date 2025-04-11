@@ -76,10 +76,10 @@ for i in range(num_peaks):
 coup_matrix = z_matrix + z_matrix.T
 
 st.subheader("Spectral Parameters")
-cfreqf2 = st.number_input("Carrier frequency F2 (ppm)", value=-30.4809)
+cfreqf2 = st.number_input("Carrier frequency F2 (ppm)", value=np.mean(peak_posns))
 cfreqf1 = st.number_input("Carrier frequency F1 (DQ, ppm)", value=2 * cfreqf2)
-swf2 = st.number_input("Spectral width F2 (ppm)", value=400.0)
-swf1 = st.number_input("Spectral width F1 (ppm)", value=300.0)
+swf2 = st.number_input("Spectral width F2 (ppm)", value=np.max(peak_posns)-np.min(peak_posns)+50)
+swf1 = st.number_input("Spectral width F1 (ppm)", value=2*swf2)
 
 st.session_state.reverse = None
 
