@@ -1,16 +1,63 @@
 import streamlit as st
+import requests
 from rdkit import Chem
-from rdkit.Chem import rdDepictor
+from rdkit.Chem import rdDepictor, Draw
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 import polars as pl
 from chembl_structure_pipeline import standardizer
 from rdkit.Chem import Draw
+import pubchempy as pcp
+
+
+def render_smiles(smiles: str, caption: str = "Molecule"):
+    """
+    Renders a molecule from a SMILES string and displays it in Streamlit.
+
+    :param smiles: SMILES string of the molecule
+    :param caption: Caption for the displayed image
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol:
+        drawing_options = Draw.MolDrawOptions()
+        drawing_options.addStereoAnnotation = True
+        drawing_options.includeAtomTags = True
+        drawing_options.addAtomIndices = False
+
+        img = Draw.MolToImage(mol, size=(200, 320), options=drawing_options)
+        st.image(img, caption=caption, use_container_width=False)
+    else:
+        st.error("Invalid SMILES string")
+
+
+# Function to get similar compounds from PubChem
+def get_similar_compounds(smiles, number_of_search):
+    similar_compounds = pcp.get_compounds(smiles, namespace=u'smiles', searchtype='similarity', listkey_count=number_of_search)
+    # st.dataframe(similar_compounds['canonical_smiles'])
+    for c in similar_compounds:
+        to_draw = c.inchi
+        if to_draw:
+            mol = Chem.MolFromInchi(to_draw, sanitize=True, removeHs=True)
+            if mol:
+                drawing_options = Draw.MolDrawOptions()
+                drawing_options.addStereoAnnotation = True
+                drawing_options.includeAtomTags = True
+                drawing_options.addAtomIndices = False
+                img = Draw.MolToImage(mol, size=(200, 200), options=drawing_options)
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(img, use_container_width='auto', caption=c.iupac_name)
+                with col2:
+                    nmrium_url = f"https://www.nmrium.org/predict?smiles={c.canonical_smiles}"
+                    st.link_button("Chemical shift prediction (NMRium)", nmrium_url,
+                                   help='Clicking here will open an external page where the chemical shifts will be predicted',
+                                   type='primary', icon=":material/arrow_circle_up:", disabled=False,
+                                   use_container_width=True)
+
+
 
 st.title("Chemical Shift")
-
 st.header("Isotropic Chemical Shift Prediction")
-
 st.markdown("#### The chemical shift prediction is done in NMRium")
 
 # Generate the molecule including drawing option
@@ -33,26 +80,30 @@ smiles_with_H = Chem.MolToSmiles(mol_with_H)
 
 st.info('Before chemical shift prediction press the apply button')
 
-
-
 # NMRium 13C and 1H prediction
 nmrium_13C_url = f"https://www.nmrium.org/predict?smiles={smiles_with_H}"
 st.link_button("Chemical shift prediction (NMRium)", nmrium_13C_url,
                help='Clicking here will open an external page where the chemical shifts will be predicted',
                type='primary', icon=":material/arrow_circle_down:", disabled=False, use_container_width=True)
-
-
-
 st.warning('The chemical shifts are mostly for solution NMR')
+
+
+if st.button('Get Similar Compounds'):
+    num_compounds = st.number_input('How many compounds do you want to predict?', value = 3, min_value = 1, max_value = 10)
+    get_similar_compounds(smiles_with_H, num_compounds)
+
+
 
 st.info('For other nuclei and for more comprehensive list of molecules, visit the website: https://nmrshiftdb.nmr.uni-koeln.de')
 
+st.divider()
 
 st.header("Chemical Shift Anisotropy")
 
-st.write('The chemical shift data is taken from the publication: Chen, Xi, and Chang-Guo Zhan. '
-         '“First-Principles Studies of C-13 NMR Chemical Shift Tensors of Amino Acids in Crystal State.” '
-         'Journal of Molecular Structure: THEOCHEM 682, (2004): 73–82.[Link](https://doi.org/10.1016/j.theochem.2004.05.027.)')
+st.write('Ye, Chaohui, Riqiang Fu, Jianzhi Hu, Lei Hou, and Shangwu Ding. '
+         '“Carbon-13 Chemical Shift Anisotropies of Solid Amino Acids.”'
+         ' Magnetic Resonance in Chemistry 31, no. 8 (August 1993): '
+         '699–704. https://doi.org/10.1002/mrc.1260310802.')
 
 
 # Data for the 20 standard amino acids
@@ -89,14 +140,8 @@ amino_acid_selection = st.selectbox("Choose an amino acid", options=df["Amino Ac
 
 if amino_acid_selection is not None:
     mask = df.filter(pl.col("Amino Acid")==amino_acid_selection)
-    mol = Chem.MolFromSmiles(mask['SMILES'].item())
-    if mol:
-        drawing_options = Draw.MolDrawOptions()
-        drawing_options.addStereoAnnotation = True
-        drawing_options.includeAtomTags = True
-        drawing_options.addAtomIndices = False
-        img = Draw.MolToImage(mol,size=(400,400), options=drawing_options)
-        st.image(img, caption=f"{amino_acid_selection}", use_container_width='auto')
+    render_smiles(mask['SMILES'].item(), mask['Amino Acid'].item())
+
 
 import os
 script_dir = os.path.dirname(__file__)

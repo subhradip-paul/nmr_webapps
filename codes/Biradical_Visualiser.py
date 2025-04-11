@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 import streamlit as st
 from rdkit import Chem
@@ -13,6 +11,7 @@ from streamlit_ketcher import st_ketcher
 from stmol import showmol, makeobj, add_hover
 from chembl_structure_pipeline import standardizer
 import py3Dmol
+
 
 
 
