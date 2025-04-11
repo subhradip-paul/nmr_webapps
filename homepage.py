@@ -10,13 +10,14 @@ dipole_calculator = st.Page("codes/Dipole_Calculator.py", title="Dipolar Couplin
 nmr_shift_predictor = st.Page("codes/Chemical_Shift_Prediction.py", title = "Chemical Shift Predictor", icon = "🤺")
 inadequate_efficiency_calc = st.Page("codes/INADEQUATE_Efficiency.py", title="Setting up INADEQUATE", icon ="⚖️")
 biradical_properties = st.Page("codes/Biradical_Visualiser.py", title = "Structure of DNP Radicals", icon="🧬")
+dq_sq_prediction = st.Page("codes/DQ_SQ_predictor.py", title = "DQ SQ Spectrum Generator", icon="🏋️‍♂️")
 
 
 pg = st.navigation(
 {
         "Home": [home],
         "Nuclei and Interactions in NMR": [nuclear_properties, dipole_calculator, nmr_shift_predictor],
-        "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, inadequate_efficiency_calc],
+        "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, inadequate_efficiency_calc, dq_sq_prediction],
         "DNP Related": [dnp_sample_prep, biradical_properties],
     }
 )
