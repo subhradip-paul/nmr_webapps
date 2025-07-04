@@ -5,6 +5,8 @@ import os
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdDepictor
+from streamlit import session_state
+
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
 from scipy.spatial.transform import Rotation as Rot
@@ -154,6 +156,24 @@ def dipole2dist(choice_nuc1, choice_nuc2, dipole):
     dist=1e10 * ((1e-7*abs((gyr1*gyr2*pl))/dipole) ** (1/3))
     return dist
 
+def simpson_display(df):
+    if 'event' not in st.session_state:
+        event = st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            on_select="rerun",
+            selection_mode="multi-row",
+        )
+
+        st.subheader("For SIMPSON")
+        dipole_pairs = event.selection.rows
+        filtered_df = df.iloc[dipole_pairs]
+        st.code(filtered_df)
+
+def click_button():
+    st.session_state.clicked = True
+
 st.title(r"Dipolar Coupling Calculator")
 st.divider()
 
@@ -223,26 +243,21 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                     render3dmol(mol3d, style)
 
 
-                # # Draw the final molecule
-                # drawing_options = Draw.MolDrawOptions()
-                # drawing_options.addStereoAnnotation = True
-                # drawing_options.includeAtomTags = True
-                # drawing_options.includeAtomNumbers = True
-                # img = Draw.MolToImage(mol3d, size=(400, 400), options=drawing_options)
-                # st.image(img, use_container_width='auto')
-
-
                 xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
                 xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
                 num_atoms = int(xyz_lines[0])
-            if st.button("Calculate"):
-                df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
-                                 sep=r"\s+",
-                                 names=["atom", "x", "y", "z"],
-                                 dtype={"atom": str, "x": float, "y": float, "z": float})
-                st.write(df)
-                df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
-                st.write(df_xyz_dipole)
+            if st.button("Calculate", on_click=click_button()):
+                if st.session_state.clicked:
+                    df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
+                                     sep=r"\s+",
+                                     names=["atom", "x", "y", "z"],
+                                     dtype={"atom": str, "x": float, "y": float, "z": float})
+                    st.write(df)
+                    df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
+                    st.dataframe(df_xyz_dipole, hide_index=True)
+
+
+
 
 
 
