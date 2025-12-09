@@ -72,7 +72,7 @@ def main():
     y1=coeff_2*(temp ** -2)
     y2=coeff_3*(temp ** -4)
     y3=coeff_4*(temp ** -6)
-    y=y0+y1+y2+y3
+    y=np.real(y0+y1+y2+y3)
     
 
     #%% Enter the relaxation time and find the temperature
@@ -83,20 +83,82 @@ def main():
     
 
     #%% Create the figure
-    fig, ax = plt.subplots()
-    ax.plot(temp,np.log10(y))
-    ax.axhline(y=np.log10(t1), ls = '--', lw=0.5, c = 'g')
-    ax.axvline(x=temp_from_poly, ls = '--', lw=0.5, c = 'r', label=str(round(np.real(temp_from_poly),2))+' K')
-    ax.set_xlabel('Relaxation Time (s)')
-    ax.set_ylabel('log10 (T) (K)')
-    ax.legend(loc='upper right')
+    # fig, ax = plt.subplots()
+    # ax.plot(temp,np.log10(y))
+    # ax.axhline(y=np.log10(t1), ls = '--', lw=0.5, c = 'g')
+    # ax.axvline(x=temp_from_poly, ls = '--', lw=0.5, c = 'r', label=str(round(np.real(temp_from_poly),2))+' K')
+    # ax.set_xlabel('Relaxation Time (s)')
+    # ax.set_ylabel('log10 (T) (K)')
+    # ax.legend(loc='upper right')
+    import plotly.graph_objects as go
+
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=temp,
+        y=np.log10(np.real(y)),
+        mode='lines',
+        name='log10(y)'
+    ))
+
+    fig.add_hline(
+        y=np.log10(t1),
+        line_dash='dash',
+        line_color='green',
+        annotation_text='T1'
+    )
+
+    fig.add_vline(
+        x=np.real(temp_from_poly),
+        line_dash='dash',
+        line_color='red',
+        annotation_text=f'{np.real(temp_from_poly):.2f} K'
+    )
+
+    fig.update_layout(
+        xaxis_title="Relaxation Time (s)",
+        yaxis_title=r"log{_10} (T) (K)",
+        legend=dict(x=0.75, y=0.95)
+    )
+
+    # ===== Styling =====
+    fig.update_layout(
+        xaxis=dict(
+            title="Relaxation Time (s)",
+            showline=True,
+            linewidth=0.75,
+            linecolor="black",
+            mirror=True,
+            showgrid=True,
+            gridcolor="rgba(0,0,0,0.08)",
+            zeroline=False,
+        ),
+        yaxis=dict(
+            title=r"log10 (T) (K)",
+            showline=True,
+            linewidth=0.75,
+            linecolor="black",
+            mirror=True,
+            showgrid=True,
+            gridcolor="rgba(0,0,0,0.08)",
+            zeroline=False
+        ),
+        # background shade
+        plot_bgcolor="rgba(240,240,240,0.6)",   # light grey
+        paper_bgcolor="white",
+        legend=dict(x=0.75, y=0.95),
+        margin=dict(l=60, r=20, t=40, b=60)
+    )
+
+    st.plotly_chart(fig, width='stretch')
 
     #%% Output cells
     kk = st.session_state.temp_from_poly
     st.metric("**Temperature in K**", np.round(np.real(temp_from_poly),2), delta=np.round(np.real(temp_from_poly-st.session_state.temp_from_poly),2))
     st.session_state.temp_from_poly = temp_from_poly
     
-    st.pyplot(fig)
+    # st.pyplot(fig)
 
 
 st.title(r"Sample temperature from T$$_{1n}$$")
