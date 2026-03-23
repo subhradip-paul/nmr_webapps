@@ -81,56 +81,74 @@ def choose_nucleus(symbol, key_gen):
     else:
         st.warning(f"No match found for {symbol}. Assigning default value 0.0")
         return 0.0  # Prevents IndexError
+def get_gyration_inputs(atom_list):
+    """Create UI for isotope selection and return gyration array."""
+    gyr_atom = []
 
+    st.subheader("Isotope Selection")
 
-def xyz_file_to_dipolar_data(xyz_dataframe, num_atoms):
-    """
-    The function takes an .xyz file of a molecular structure and calculates the
-    dipolar coupling and Euler angle between different nuclei in the principal axis frame.
+    for idx, symbol in enumerate(atom_list):
+        matches = nuctable[nuctable["Symbol"] == symbol]
 
-    :param xyz_dataframe: DataFrame containing atomic symbols and coordinates
-    :param num_atoms: Number of atoms in the structure
-    :return: A pandas DataFrame with nuclear pairs, dipolar coupling, and Euler angles
-    """
+        if matches.shape[0] == 1:
+            gyr_atom.append(matches.iloc[0]["GyrHz"])
 
-    mol = xyz_dataframe
-    nuc = mol['atom'].tolist()
-    coord_xyz = mol[['x', 'y', 'z']].astype(np.float64).to_numpy()
-    pl = 6.62607015e-34  # Planck constant
+        elif matches.shape[0] > 1:
+            key = f"isotope_{idx}_{symbol}"
 
-    # DataFrame to store dipolar couplings and Euler angles
-    df_xyz_to_dip = pd.DataFrame(columns=['i', 'Nuc i', 'j', 'Nuc j', 'Distance (Å)',
-                                          'Dipolar Coupling (Hz)', 'alpha', 'beta', 'gamma'])
+            if key not in st.session_state:
+                st.session_state[key] = matches["Name"].iloc[0]
 
-    # Assign gyromagnetic ratios, handling missing nuclei
-    gyr_atom = np.zeros(int(num_atoms))
-    for idx, nucleus in enumerate(nuc):
-        gyr_atom[idx] = choose_nucleus(nucleus, idx)
-        if gyr_atom[idx] == 0.0:
-            st.warning(f"Warning: Nucleus {nucleus} not found in the database. Dipolar interaction may be incorrect.")
+            choice = st.selectbox(
+                f"{symbol} (atom {idx+1})",
+                matches["Name"].tolist(),
+                key=key
+            )
 
-    # Initialize distance and dipole matrices
-    dist = np.zeros((num_atoms, num_atoms))
-    dip = np.zeros((num_atoms, num_atoms))
+            gyr = matches[matches["Name"] == choice]["GyrHz"].values[0]
+            gyr_atom.append(gyr)
 
-    # Compute distances and dipolar couplings
-    for idx in range(num_atoms):
-        gyr1 = gyr_atom[idx] * 1e6  # Convert to Hz
-        for j in range(idx + 1, num_atoms):
-            dist[idx, j] = np.linalg.norm(coord_xyz[idx] - coord_xyz[j])  # Distance in Å
+        else:
+            st.warning(f"{symbol} not found. Using 0.")
+            gyr_atom.append(0.0)
+
+    return np.array(gyr_atom)
+
+def xyz_to_dipolar_data(xyz_dataframe, gyr_atom):
+    num_atoms = len(xyz_dataframe)
+
+    nuc = xyz_dataframe['atom'].tolist()
+    coord_xyz = xyz_dataframe[['x', 'y', 'z']].astype(float).to_numpy()
+
+    pl = 6.62607015e-34
+
+    results = []
+
+    for i in range(num_atoms):
+        for j in range(i + 1, num_atoms):
+
+            r = np.linalg.norm(coord_xyz[i] - coord_xyz[j])
+
+            gyr1 = gyr_atom[i] * 1e6
             gyr2 = gyr_atom[j] * 1e6
-            dip[idx, j] = -1e-7 * (gyr1 * gyr2 * pl) / ((dist[idx, j] * 1e-10) ** 3)  # Dipolar coupling in Hz
 
-    # Store results in DataFrame
-    for idx in range(num_atoms):
-        for j in range(idx + 1, num_atoms):
-            euler_angles = np.round(angle_between_vectors(coord_xyz[idx], coord_xyz[j]), 2)
-            df_xyz_to_dip.loc[len(df_xyz_to_dip)] = [
-                idx + 1, nuc[idx], j + 1, nuc[j], round(dist[idx, j], 2),
-                round(dip[idx, j], 2), *euler_angles
-            ]
+            dip = -1e-7 * (gyr1 * gyr2 * pl) / ((r * 1e-10) ** 3)
 
-    return df_xyz_to_dip
+            euler = np.round(angle_between_vectors(coord_xyz[i], coord_xyz[j]), 2)
+
+            results.append([
+                i + 1, nuc[i],
+                j + 1, nuc[j],
+                round(r, 2),
+                round(dip, 2),
+                *euler
+            ])
+
+    return pd.DataFrame(results, columns=[
+        'i', 'Nuc i', 'j', 'Nuc j',
+        'Distance (Å)', 'Dipolar Coupling (Hz)',
+        'alpha', 'beta', 'gamma'
+    ])
 
 
 def dist2dipole(choice_nuc1, choice_nuc2, distance):
@@ -206,7 +224,7 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                                dtype={"atom" : str , "x" : float , "y" : float , "z" : float} )
             st.data_editor(df)
             num_atoms = len(df)
-            df_xyz_dipole = xyz_file_to_dipolar_data ( xyz_dataframe=df , num_atoms=num_atoms )
+            df_xyz_dipole = xyz_to_dipolar_data ( xyz_dataframe=df , num_atoms=num_atoms )
             st.write ( df_xyz_dipole )
 
     else:
@@ -246,15 +264,31 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
                 xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
                 num_atoms = int(xyz_lines[0])
-            if st.button("Calculate", on_click=click_button()):
-                if st.session_state.clicked:
-                    df = pd.read_csv(StringIO("\n".join(xyz_lines[2:])),
-                                     sep=r"\s+",
-                                     names=["atom", "x", "y", "z"],
-                                     dtype={"atom": str, "x": float, "y": float, "z": float})
-                    st.write(df)
-                    df_xyz_dipole =  xyz_file_to_dipolar_data(xyz_dataframe=df, num_atoms=num_atoms)
-                    st.dataframe(df_xyz_dipole, hide_index=True)
+
+            if "run_calc" not in st.session_state:
+                st.session_state.run_calc = False
+
+            if st.button("Calculate"):
+                st.session_state.run_calc = True
+
+            if st.session_state.run_calc:
+                df = pd.read_csv(
+                    StringIO("\n".join(xyz_lines[2:])),
+                    sep=r"\s+",
+                    names=["atom", "x", "y", "z"]
+                )
+
+                st.write("### Input structure")
+                st.dataframe(df)
+
+                # 👉 UI phase (stable)
+                gyr_atom = get_gyration_inputs(df["atom"].tolist())
+
+                # 👉 Compute phase
+                df_xyz_dipole = xyz_to_dipolar_data(df, gyr_atom)
+
+                st.write("### Dipolar couplings")
+                st.dataframe(df_xyz_dipole, hide_index=True)
 
 
 
