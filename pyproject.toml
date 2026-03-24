@@ -17,10 +17,14 @@ dependencies = [
     "pubchempy>=1.0.4",
     "py3dmol>=2.4.2",
     "rdkit>=2024.9.5",
-    "requests>=2.32.3",
     "scipy>=1.15.1",
     "scipy-stubs~=1.16.3",
     "stmol>=0.0.9",
     "streamlit>=1.42.0",
     "streamlit-ketcher>=0.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
 ]
