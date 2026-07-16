@@ -22,6 +22,7 @@ dependencies = [
     "stmol>=0.0.9",
     "streamlit>=1.42.0",
     "streamlit-ketcher>=0.0.1",
+    "watchdog>=6.0.0",
 ]
 
 [dependency-groups]
