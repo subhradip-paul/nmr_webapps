@@ -19,6 +19,7 @@ pg = st.navigation(
         "Nuclei and Interactions in NMR": [nuclear_properties, dipole_calculator, nmr_shift_predictor],
         "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, inadequate_efficiency_calc, dq_sq_prediction, temperature_from_resistance],
         "DNP Related": [dnp_sample_prep, biradical_properties],
+        "Our Lab Members": [st.Page("codes/Lab_Members.py", title="Lab Members", icon="👩‍🔬")],
     }
 )
 

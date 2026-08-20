@@ -16,6 +16,7 @@ dependencies = [
     "polars>=1.25.0",
     "pubchempy>=1.0.4",
     "py3dmol>=2.4.2",
+    "pycountry>=26.2.16",
     "rdkit>=2024.9.5",
     "scipy>=1.15.1",
     "scipy-stubs~=1.16.3",
