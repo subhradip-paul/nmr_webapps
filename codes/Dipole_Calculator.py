@@ -214,81 +214,125 @@ if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
         st.divider()
         st.latex(r"\text{Distance  = }" + str(np.abs(np.round(d,2))) + r'\ {\AA}')
 elif choice_of_calculation == 'Dipolar Couplings from Structure':
-    options = st.selectbox("Draw a structure or manually enter *xyz* coordinates", options=["Draw", "Manual"], index=0)
+
+    options = st.selectbox(
+        "Draw a structure or manually enter *xyz* coordinates",
+        options=["Draw", "Manual"],
+        index=0
+    )
+
     if options == "Manual":
-        xyz_lines = st.file_uploader("Upload an xyz coordinates file", type="xyz")
+
+        xyz_lines = st.file_uploader(
+            "Upload an xyz coordinates file",
+            type="xyz"
+        )
+
         if xyz_lines is not None:
-            df = pd.read_csv ( xyz_lines , skiprows=2,
-                               sep=r"\s+" ,
-                               names=[ "atom" , "x" , "y" , "z" ] ,
-                               dtype={"atom" : str , "x" : float , "y" : float , "z" : float} )
-            st.data_editor(df)
-            num_atoms = len(df)
-            df_xyz_dipole = xyz_to_dipolar_data ( xyz_dataframe=df , num_atoms=num_atoms )
-            st.write ( df_xyz_dipole )
+
+            df = pd.read_csv(
+                xyz_lines,
+                skiprows=2,
+                sep=r"\s+",
+                names=["atom", "x", "y", "z"],
+                dtype={
+                    "atom": str,
+                    "x": float,
+                    "y": float,
+                    "z": float
+                }
+            )
+
+            st.write("### Input structure")
+            st.dataframe(df)
+
+            # Isotope selection
+            gyr_atom = get_gyration_inputs(
+                df["atom"].tolist()
+            )
+
+            # Calculate dipolar couplings
+            df_xyz_dipole = xyz_to_dipolar_data(
+                xyz_dataframe=df,
+                gyr_atom=gyr_atom
+            )
+
+            st.write("### Dipolar couplings")
+            st.dataframe(
+                df_xyz_dipole,
+                hide_index=True
+            )
 
     else:
-        smiles = 'cc'
-        smiles = st_ketcher(smiles)
+
+        smiles = st_ketcher("cc")
+
         if smiles is not None:
-            mol = Chem.MolFromSmiles( smiles)
+
+            mol = Chem.MolFromSmiles(smiles)
+
             if mol is not None:
 
-                # xyz_file = os.path.join(script_dir, '../dep/temp.xyz')
-                # Chem.MolToXYZFile(mol, xyz_file)
-                remove_1H = st.checkbox('Remove 1H')
+                remove_1H = st.checkbox("Remove 1H")
+
+                mol3d = Chem.AddHs(mol)
+
+                params = AllChem.ETKDGv3()
+                params.randomSeed = 0xf00d
+
+                status = AllChem.EmbedMolecule(
+                    mol3d,
+                    params
+                )
+
+                if status != 0:
+                    st.error("Could not generate a 3D structure.")
+                    st.stop()
+
+                AllChem.MMFFOptimizeMolecule(mol3d)
+
                 if remove_1H:
-                    mol3d = Chem.AddHs(mol)
-                    params = AllChem.ETKDGv3()
-                    params.randomSeed = 0xf00d  # optional random seed for reproducibility
-                    AllChem.EmbedMolecule(mol3d, params)
-                    AllChem.MMFFOptimizeMolecule(mol3d)
                     mol3d = Chem.RemoveAllHs(mol3d)
-                    mol_to_xyz = mol3d
-                    # Dropdown for style selection
-                    style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
-                    render3dmol(mol3d, style)
 
-                else:
-                    mol3d = Chem.AddHs(mol)
-                    params = AllChem.ETKDGv3()
-                    params.randomSeed = 0xf00d  # optional random seed for reproducibility
-                    AllChem.EmbedMolecule(mol3d, params)
-                    AllChem.MMFFOptimizeMolecule(mol3d)
-                    mol_to_xyz = mol3d
-                    # Dropdown for style selection
-                    style = st.selectbox("Select style:", ['stick', 'ball and stick', 'sphere'])
-                    render3dmol(mol3d, style)
+                style = st.selectbox(
+                    "Select style:",
+                    ["stick", "ball and stick", "sphere"]
+                )
 
+                render3dmol(mol3d, style)
 
-                xyz_string = Chem.MolToXYZBlock(mol_to_xyz)
-                xyz_lines = xyz_string.strip().splitlines()  # Split into lines and remove empty spaces
-                num_atoms = int(xyz_lines[0])
+                xyz_string = Chem.MolToXYZBlock(mol3d)
 
-            if "run_calc" not in st.session_state:
-                st.session_state.run_calc = False
+                xyz_lines = xyz_string.strip().splitlines()
 
-            if st.button("Calculate"):
-                st.session_state.run_calc = True
-
-            if st.session_state.run_calc:
                 df = pd.read_csv(
                     StringIO("\n".join(xyz_lines[2:])),
                     sep=r"\s+",
                     names=["atom", "x", "y", "z"]
                 )
 
-                st.write("### Input structure")
-                st.dataframe(df)
+                if st.button("Calculate"):
 
-                # 👉 UI phase (stable)
-                gyr_atom = get_gyration_inputs(df["atom"].tolist())
+                    st.write("### Input structure")
+                    st.dataframe(df)
 
-                # 👉 Compute phase
-                df_xyz_dipole = xyz_to_dipolar_data(df, gyr_atom)
+                    # Isotope selection
+                    gyr_atom = get_gyration_inputs(
+                        df["atom"].tolist()
+                    )
 
-                st.write("### Dipolar couplings")
-                st.dataframe(df_xyz_dipole, hide_index=True)
+                    # Calculate dipolar couplings
+                    df_xyz_dipole = xyz_to_dipolar_data(
+                        xyz_dataframe=df,
+                        gyr_atom=gyr_atom
+                    )
+
+                    st.write("### Dipolar couplings")
+                    st.dataframe(
+                        df_xyz_dipole,
+                        hide_index=True
+                    )
+
 
 
 
