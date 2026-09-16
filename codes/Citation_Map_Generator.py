@@ -217,7 +217,7 @@ def build_forward_citation_graph(seed_id, max_depth=2, max_per_level_by_depth=No
     Edges point citing_paper -> cited_paper, matching the citation direction.
     """
     max_per_level_by_depth = max_per_level_by_depth or {}
-    email = st.secrets.get("OPENALEX_EMAIL", "")
+    email = get_secret("OPENALEX_EMAIL") or ""
     seed = requests.get(f"{OPENALEX_BASE}/works/{seed_id}", params={"mailto": email}).json()
 
     nodes = {seed_id: {"label": _short_label(seed), "title": seed["display_name"],
