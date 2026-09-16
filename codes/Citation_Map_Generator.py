@@ -34,6 +34,7 @@ from pyzotero import zotero
 import requests
 import plotly.graph_objects as go
 import networkx as nx
+import os
 
 OPENALEX_BASE = "https://api.openalex.org"
 
@@ -41,6 +42,19 @@ OPENALEX_BASE = "https://api.openalex.org"
 DEPTH_COLORS = {0: "#d62728", 1: "#2ca02c", 2: "#1f77b4", 3: "#9467bd"}
 DEPTH_LABELS = {0: "Selected paper", 1: "Cites it directly", 2: "Cites a citing paper", 3: "3rd generation"}
 
+# ------------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------------
+
+ZOTERO_LIBRARY_ID = os.getenv("ZOTERO_LIBRARY_ID")
+ZOTERO_LIBRARY_TYPE = os.getenv("ZOTERO_LIBRARY_TYPE", "user")
+ZOTERO_API_KEY = os.getenv("ZOTERO_API_KEY")
+ZOTERO_COLLECTION_KEY = os.getenv("ZOTERO_COLLECTION_KEY")
+OPENALEX_EMAIL = os.getenv("OPENALEX_EMAIL", "")
+
+if not ZOTERO_LIBRARY_ID or not ZOTERO_API_KEY:
+    st.error("Zotero credentials are not configured.")
+    st.stop()
 
 # ---------- Zotero ----------
 
@@ -145,19 +159,26 @@ def fetch_zotero_items():
 
 # ---------- OpenAlex ----------
 
+# ---------- OpenAlex ----------
+
 @st.cache_data(ttl=86400)  # citation data barely changes day to day
 def resolve_openalex_work(doi):
     """Look up a single DOI on OpenAlex. Returns None if not found."""
-    email = st.secrets.get("OPENALEX_EMAIL", "")
+
+    email = get_secret("OPENALEX_EMAIL") or ""
+
     try:
         r = requests.get(
             f"{OPENALEX_BASE}/works/doi:{doi}",
             params={"mailto": email},
             timeout=20,
         )
+
         if r.status_code != 200:
             return None
+
         return r.json()
+
     except requests.RequestException:
         return None
 
