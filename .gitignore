@@ -1,2 +1,4 @@
 *.env
 streamlitenv/
+codes/.streamlit/secrets.toml
+.streamlit/secrets.toml

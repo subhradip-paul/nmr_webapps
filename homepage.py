@@ -12,6 +12,8 @@ inadequate_efficiency_calc = st.Page("codes/INADEQUATE_Efficiency.py", title="Se
 biradical_properties = st.Page("codes/Biradical_Visualiser.py", title = "Structure of DNP Radicals", icon="🧬")
 dq_sq_prediction = st.Page("codes/DQ_SQ_predictor.py", title = "DQ SQ Spectrum Generator", icon="🏋️‍♂️")
 temperature_from_resistance = st.Page("codes/Temperature_from_Resistance.py", title = "Cernox Temperature Converter", icon="🌡️")
+lab_members = st.Page("codes/Lab_Members.py", title = "Lab Members", icon="👩‍🔬")
+lab_citation_map = st.Page("codes/Citation_Map_Generator.py", title = "Citation Map Generator", icon="📜")
 
 pg = st.navigation(
 {
@@ -19,7 +21,7 @@ pg = st.navigation(
         "Nuclei and Interactions in NMR": [nuclear_properties, dipole_calculator, nmr_shift_predictor],
         "Setting up Experiments": [optimum_recycle_delay, sample_temp_kbr, inadequate_efficiency_calc, dq_sq_prediction, temperature_from_resistance],
         "DNP Related": [dnp_sample_prep, biradical_properties],
-        "Our Lab Members": [st.Page("codes/Lab_Members.py", title="Lab Members", icon="👩‍🔬")],
+        "Lab Related": [lab_members, lab_citation_map],
     }
 )
 
