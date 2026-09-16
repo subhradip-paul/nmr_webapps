@@ -44,34 +44,104 @@ DEPTH_LABELS = {0: "Selected paper", 1: "Cites it directly", 2: "Cites a citing 
 
 # ---------- Zotero ----------
 
-@st.cache_data(ttl=3600)  # re-check Zotero once an hour
+# @st.cache_data(ttl=3600)  # re-check Zotero once an hour
+# def fetch_zotero_items():
+#     """Pull items (with DOIs) from the configured Zotero library/collection."""
+#     zot = zotero.Zotero(
+#         st.secrets["ZOTERO_LIBRARY_ID"],
+#         st.secrets["ZOTERO_LIBRARY_TYPE"],
+#         st.secrets["ZOTERO_API_KEY"],
+#     )
+
+#     collection_key = st.secrets.get("ZOTERO_COLLECTION_KEY")
+#     if collection_key:
+#         items = zot.everything(zot.collection_items(collection_key, itemType="-attachment"))
+#     else:
+#         items = zot.everything(zot.top(itemType="-attachment"))
+
+#     pubs = []
+#     for item in items:
+#         data = item.get("data", {})
+#         doi = data.get("DOI")
+#         if not doi:
+#             continue  # skip items without a DOI — can't resolve to OpenAlex reliably
+#         pubs.append({
+#             "title": data.get("title", "Untitled"),
+#             "doi": doi,
+#             "year": data.get("date", "")[:4],
+#         })
+#     return pubs
+
+
+import os
+# import streamlit as st
+# import pyzotero.zotero as zotero
+
+
+def get_secret(name):
+    """Get a secret from environment variables or Streamlit secrets."""
+
+    value = os.getenv(name)
+
+    if value:
+        return value
+
+    try:
+        return st.secrets[name]
+    except (KeyError, st.errors.StreamlitSecretNotFoundError):
+        return None
+
+
+@st.cache_data(ttl=3600)
 def fetch_zotero_items():
     """Pull items (with DOIs) from the configured Zotero library/collection."""
+
+    library_id = get_secret("ZOTERO_LIBRARY_ID")
+    library_type = get_secret("ZOTERO_LIBRARY_TYPE")
+    api_key = get_secret("ZOTERO_API_KEY")
+    collection_key = get_secret("ZOTERO_COLLECTION_KEY")
+
+    if not library_id or not library_type or not api_key:
+        raise RuntimeError(
+            "Zotero configuration is missing. "
+            "Set ZOTERO_LIBRARY_ID, ZOTERO_LIBRARY_TYPE, "
+            "and ZOTERO_API_KEY in Heroku Config Vars."
+        )
+
     zot = zotero.Zotero(
-        st.secrets["ZOTERO_LIBRARY_ID"],
-        st.secrets["ZOTERO_LIBRARY_TYPE"],
-        st.secrets["ZOTERO_API_KEY"],
+        library_id,
+        library_type,
+        api_key,
     )
 
-    collection_key = st.secrets.get("ZOTERO_COLLECTION_KEY")
     if collection_key:
-        items = zot.everything(zot.collection_items(collection_key, itemType="-attachment"))
+        items = zot.everything(
+            zot.collection_items(
+                collection_key,
+                itemType="-attachment"
+            )
+        )
     else:
-        items = zot.everything(zot.top(itemType="-attachment"))
+        items = zot.everything(
+            zot.top(itemType="-attachment")
+        )
 
     pubs = []
+
     for item in items:
         data = item.get("data", {})
         doi = data.get("DOI")
+
         if not doi:
-            continue  # skip items without a DOI — can't resolve to OpenAlex reliably
+            continue
+
         pubs.append({
             "title": data.get("title", "Untitled"),
             "doi": doi,
             "year": data.get("date", "")[:4],
         })
-    return pubs
 
+    return pubs
 
 # ---------- OpenAlex ----------
 
