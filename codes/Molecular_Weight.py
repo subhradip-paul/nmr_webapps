@@ -2,9 +2,9 @@ import streamlit as st
 import chemparse
 from mendeleev import element
 
-st.set_page_config(page_title="Fast Molecular Weight Calculator", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="Molecular Weight Calculator", page_icon="🧪", layout="wide")
 
-st.title("🧪 Fast Periodic Block Molecular Weight Calculator")
+st.title("🧪 Molecular Weight Calculator")
 st.write("Elements are categorized by chemical blocks (**s**, **p**, **d**, **f**). Active formula elements glow brightly!")
 
 # Hardcoded layout coordinates so we don't need to fetch them
