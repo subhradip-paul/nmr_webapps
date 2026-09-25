@@ -2,3 +2,5 @@
 streamlitenv/
 codes/.streamlit/secrets.toml
 .streamlit/secrets.toml
+.claude/*
+*claude*
