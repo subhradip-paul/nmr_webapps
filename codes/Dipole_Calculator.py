@@ -2,14 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+import re
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdDepictor
-from streamlit import session_state
 
 rdDepictor.SetPreferCoordGen(True)
 from streamlit_ketcher import st_ketcher
-from scipy.spatial.transform import Rotation as Rot
 from io import StringIO
 import py3Dmol
 from stmol import showmol, add_hover
@@ -17,19 +16,17 @@ from stmol import showmol, add_hover
 script_dir = os.path.dirname(__file__)
 csv_file = os.path.join(script_dir, '../dep/NMR_freq_table.csv')
 
-nuctable=pd.read_csv(csv_file)
-gyr_ratio_MHz_T=nuctable["GyrHz"]
-name_nuc=nuctable["Name"]
+nuctable = pd.read_csv(csv_file)
+gyr_ratio_MHz_T = nuctable["GyrHz"]
+name_nuc = nuctable["Name"]
 
 
 def render3dmol(mol, style):
-    # Convert RDKit molecule to MOL block format
     mol_block = Chem.MolToMolBlock(mol)
 
     xyzview = py3Dmol.view()
-    xyzview.addModel(mol_block, 'mol')  # Pass MOL block instead of RDKit Mol object
+    xyzview.addModel(mol_block, 'mol')
 
-    # Set molecular visualization style
     if style == 'stick':
         xyzview.setStyle({'stick': {}})
     elif style == 'ball and stick':
@@ -41,49 +38,20 @@ def render3dmol(mol, style):
     xyzview.setBackgroundColor(colour_bg)
     xyzview.zoomTo()
     add_hover(xyzview)
-    showmol(xyzview,height=500,width=800)
-
-def angle_between_vectors(vec1 , vec2) :
-    """
-    The function calculates the Euler angles between two vectors
-    in the zyz convention. The conventions can be found in scipy's transform module
-    :param vec1: a vector of the format [i1, j1, k1]
-    :param vec2: b vector of the format [i2, j2, k2]
-    :return: a vector of three Euler angles connecting the two vectors
-    """
-    vec1 = vec1 / np.linalg.norm ( vec1 )
-    vec2 = vec2 / np.linalg.norm ( vec2 )
-    cp = np.cross ( vec1 , vec2 )
-    dp = np.dot ( vec1 , vec2 )
-    cosine_ang = dp
-    ssc = np.array ( [ [ 0 , -cp[ 2 ] , cp[ 1 ] ] , [ cp[ 2 ] , 0 , -cp[ 0 ] ] , [ -cp[ 1 ] , cp[ 0 ] , 0 ] ] )
-    rot_mat = np.identity ( 3 ) + ssc + np.dot ( ssc , ssc ) / (1 + cosine_ang)
-    ff = Rot.from_matrix ( rot_mat )
-    euler_angles = ff.as_euler ( 'zyz' , degrees='True' )
-    return euler_angles
+    showmol(xyzview, height=500, width=800)
 
 
+def nuc_label(name, symbol):
+    """Isotope label like '13C' for SLEEPY/SIMPSON. Assumes the 'Name' column
+    looks like '1H' or '13C'; otherwise falls back to the element symbol."""
+    m = re.fullmatch(r"\s*(\d+)\s*([A-Z][a-z]?)\s*", str(name))
+    return f"{m.group(1)}{m.group(2)}" if m else str(symbol)
 
 
-def choose_nucleus(symbol, key_gen):
-    """Returns the user's choice when multiple nucleus options exist."""
-    matches = nuctable[nuctable["Symbol"] == symbol]
-
-    if matches.shape[0] == 1:
-        return matches.iloc[0]["GyrHz"]  # Use the only available match
-
-    elif matches.shape[0] > 1:
-        # Let the user choose via a dropdown menu in Streamlit
-        choice = st.selectbox(f"Multiple isotopes found for {symbol}. Choose one:",
-                              matches["Name"].tolist(), key=str(key_gen) + symbol)
-        return matches[matches["Name"] == choice]["GyrHz"].values[0]
-
-    else:
-        st.warning(f"No match found for {symbol}. Assigning default value 0.0")
-        return 0.0  # Prevents IndexError
 def get_gyration_inputs(atom_list):
-    """Create UI for isotope selection and return gyration array."""
+    """UI for isotope selection. Returns (gyromagnetic ratios, isotope labels)."""
     gyr_atom = []
+    labels = []
 
     st.subheader("Isotope Selection")
 
@@ -91,28 +59,39 @@ def get_gyration_inputs(atom_list):
         matches = nuctable[nuctable["Symbol"] == symbol]
 
         if matches.shape[0] == 1:
-            gyr_atom.append(matches.iloc[0]["GyrHz"])
+            row = matches.iloc[0]
+            gyr_atom.append(row["GyrHz"])
+            labels.append(nuc_label(row["Name"], symbol))
 
         elif matches.shape[0] > 1:
             key = f"isotope_{idx}_{symbol}"
+            names = matches["Name"].tolist()
 
-            if key not in st.session_state:
-                st.session_state[key] = matches["Name"].iloc[0]
+            if st.session_state.get(key) not in names:
+                st.session_state[key] = names[0]
 
-            choice = st.selectbox(
-                f"{symbol} (atom {idx+1})",
-                matches["Name"].tolist(),
-                key=key
-            )
+            choice = st.selectbox(f"{symbol} (atom {idx+1})", names, key=key)
 
-            gyr = matches[matches["Name"] == choice]["GyrHz"].values[0]
-            gyr_atom.append(gyr)
+            gyr_atom.append(matches[matches["Name"] == choice]["GyrHz"].values[0])
+            labels.append(nuc_label(choice, symbol))
 
         else:
             st.warning(f"{symbol} not found. Using 0.")
             gyr_atom.append(0.0)
+            labels.append(symbol)
 
-    return np.array(gyr_atom)
+    return np.array(gyr_atom), labels
+
+
+def dipolar_euler(ri, rj):
+    """ZYZ Euler angles (deg) that take z onto the i->j internuclear vector.
+    gamma is arbitrary for an axial tensor."""
+    v = np.asarray(rj, float) - np.asarray(ri, float)
+    v /= np.linalg.norm(v)
+    beta = np.degrees(np.arccos(np.clip(v[2], -1, 1)))
+    alpha = np.degrees(np.arctan2(v[1], v[0]))
+    return np.array([alpha, beta, 0.0])
+
 
 def xyz_to_dipolar_data(xyz_dataframe, gyr_atom):
     num_atoms = len(xyz_dataframe)
@@ -134,14 +113,14 @@ def xyz_to_dipolar_data(xyz_dataframe, gyr_atom):
 
             dip = -1e-7 * (gyr1 * gyr2 * pl) / ((r * 1e-10) ** 3)
 
-            euler = np.round(angle_between_vectors(coord_xyz[i], coord_xyz[j]), 2)
+            euler = dipolar_euler(coord_xyz[i], coord_xyz[j])
 
             results.append([
                 i + 1, nuc[i],
                 j + 1, nuc[j],
                 round(r, 2),
                 round(dip, 2),
-                *euler
+                *np.round(euler, 2)
             ])
 
     return pd.DataFrame(results, columns=[
@@ -151,51 +130,90 @@ def xyz_to_dipolar_data(xyz_dataframe, gyr_atom):
     ])
 
 
+# ---------------------------------------------------------------------------
+# Text output for SLEEPY and SIMPSON
+# ---------------------------------------------------------------------------
+def make_sleepy_text(df, nuclei):
+    """SLEEPY: 0-based indices, delta = 2*b (b in Hz)."""
+    lines = [f"nuclei = {list(nuclei)}", ""]
+    for _, r in df.iterrows():
+        lines.append(
+            f"ex.set_inter('dipole', i0={int(r['i']) - 1}, i1={int(r['j']) - 1}, "
+            f"delta={2 * r['Dipolar Coupling (Hz)']:.2f}, "
+            f"euler_d=[{r['alpha']:.2f}, {r['beta']:.2f}, {r['gamma']:.2f}])"
+        )
+    return "\n".join(lines)
+
+
+def make_simpson_text(df, nuclei):
+    """SIMPSON: 1-based indices, dipole i j b(Hz) alpha beta gamma."""
+    channels = list(dict.fromkeys(nuclei))
+    lines = ["spinsys {",
+             f"  channels {' '.join(channels)}",
+             f"  nuclei {' '.join(nuclei)}"]
+    for _, r in df.iterrows():
+        lines.append(
+            f"  dipole {int(r['i'])} {int(r['j'])} "
+            f"{r['Dipolar Coupling (Hz)']:.2f} "
+            f"{r['alpha']:.2f} {r['beta']:.2f} {r['gamma']:.2f}"
+        )
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def show_dipolar_output(df, nuclei):
+    """Dipolar table with row selection, plus copy-ready SLEEPY/SIMPSON text.
+    With no rows selected, all pairs are exported."""
+    st.write("### Dipolar couplings")
+    st.caption("Select rows to export only those pairs (none selected = all pairs).")
+    event = st.dataframe(
+        df,
+        hide_index=True,
+        width='content',
+        on_select="rerun",
+        selection_mode="multi-row",
+    )
+    rows = event.selection.rows
+    export_df = df.iloc[rows] if rows else df
+
+    st.subheader("SLEEPY input")
+    st.code(make_sleepy_text(export_df, nuclei), language="python")
+
+    st.subheader("SIMPSON input")
+    st.code(make_simpson_text(export_df, nuclei), language="text")
+
+
 def dist2dipole(choice_nuc1, choice_nuc2, distance):
     pl = 6.62607015e-34
-    nuc1idx = name_nuc[name_nuc.str.match(choice_nuc1)].index
-    nuc2idx = name_nuc[name_nuc.str.match(choice_nuc2)].index
+    nuc1idx = name_nuc[name_nuc == choice_nuc1].index
+    nuc2idx = name_nuc[name_nuc == choice_nuc2].index
 
-    gyr1=gyr_ratio_MHz_T[nuc1idx[0]]*1e6
-    gyr2=gyr_ratio_MHz_T[nuc2idx[0]]*1e6
+    gyr1 = gyr_ratio_MHz_T[nuc1idx[0]] * 1e6
+    gyr2 = gyr_ratio_MHz_T[nuc2idx[0]] * 1e6
 
-    dip=-1e-7*(gyr1*gyr2*pl)/((distance*1e-10) ** 3)
+    dip = -1e-7 * (gyr1 * gyr2 * pl) / ((distance * 1e-10) ** 3)
     return dip
-    
+
 
 def dipole2dist(choice_nuc1, choice_nuc2, dipole):
     pl = 6.62607015e-34
-    nuc1idx = name_nuc[name_nuc.str.match(choice_nuc1)].index
-    nuc2idx = name_nuc[name_nuc.str.match(choice_nuc2)].index
+    nuc1idx = name_nuc[name_nuc == choice_nuc1].index
+    nuc2idx = name_nuc[name_nuc == choice_nuc2].index
 
-    gyr1=gyr_ratio_MHz_T[nuc1idx[0]]*1e6
-    gyr2=gyr_ratio_MHz_T[nuc2idx[0]]*1e6
+    gyr1 = gyr_ratio_MHz_T[nuc1idx[0]] * 1e6
+    gyr2 = gyr_ratio_MHz_T[nuc2idx[0]] * 1e6
 
-    dist=1e10 * ((1e-7*abs((gyr1*gyr2*pl))/dipole) ** (1/3))
+    dist = 1e10 * ((1e-7 * abs((gyr1 * gyr2 * pl)) / dipole) ** (1 / 3))
     return dist
 
-def simpson_display(df):
-    if 'event' not in st.session_state:
-        event = st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="multi-row",
-        )
-
-        st.subheader("For SIMPSON")
-        dipole_pairs = event.selection.rows
-        filtered_df = df.iloc[dipole_pairs]
-        st.code(filtered_df)
-
-def click_button():
-    st.session_state.clicked = True
 
 st.title(r"Dipolar Coupling Calculator")
 st.divider()
 
-choice_of_calculation = st.radio(":rainbow[**What do you want to calculate?**]", [r"Dipole :arrows_counterclockwise: Distance", r'Dipolar Couplings from Structure'], index=None)
+choice_of_calculation = st.radio(
+    ":rainbow[**What do you want to calculate?**]",
+    [r"Dipole :arrows_counterclockwise: Distance", r'Dipolar Couplings from Structure'],
+    index=None)
 
 if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
     choice_nuc1 = st.selectbox('Nucleus 1:', nuctable.Name.values.tolist(), index=2)
@@ -203,16 +221,17 @@ if choice_of_calculation == "Dipole :arrows_counterclockwise: Distance":
     choice_calc = st.radio('Method', ('Distance to Dipole', 'Dipole to Distance'))
 
     if choice_calc == 'Distance to Dipole':
-        distance=st.number_input('Enter distance in Angstrom: ', min_value=0.5, value=1.07)
-        coup = dist2dipole(choice_nuc1,choice_nuc2,distance)
+        distance = st.number_input('Enter distance in Angstrom: ', min_value=0.5, value=1.07)
+        coup = dist2dipole(choice_nuc1, choice_nuc2, distance)
         st.divider()
-        st.write("The dipolar coupling = " + str(np.abs(np.round(coup,2))) + ' Hz')
-        st.write("The dipolar coupling = " + str(np.abs(np.round(coup/1e3,2))) + ' kHz')
+        st.write("The dipolar coupling = " + str(np.abs(np.round(coup, 2))) + ' Hz')
+        st.write("The dipolar coupling = " + str(np.abs(np.round(coup / 1e3, 2))) + ' kHz')
     else:
-        dipole=st.number_input('Enter dipolar coupling in Hz: ', min_value=0.5)
-        d=dipole2dist(choice_nuc1,choice_nuc2,dipole)
+        dipole = st.number_input('Enter dipolar coupling in Hz: ', min_value=0.5)
+        d = dipole2dist(choice_nuc1, choice_nuc2, dipole)
         st.divider()
-        st.latex(r"\text{Distance  = }" + str(np.abs(np.round(d,2))) + r'\ {\AA}')
+        st.latex(r"\text{Distance  = }" + str(np.abs(np.round(d, 2))) + r'\ {\AA}')
+
 elif choice_of_calculation == 'Dipolar Couplings from Structure':
 
     options = st.selectbox(
@@ -223,10 +242,7 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
 
     if options == "Manual":
 
-        xyz_lines = st.file_uploader(
-            "Upload an xyz coordinates file",
-            type="xyz"
-        )
+        xyz_lines = st.file_uploader("Upload an xyz coordinates file", type="xyz")
 
         if xyz_lines is not None:
 
@@ -235,33 +251,17 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 skiprows=2,
                 sep=r"\s+",
                 names=["atom", "x", "y", "z"],
-                dtype={
-                    "atom": str,
-                    "x": float,
-                    "y": float,
-                    "z": float
-                }
+                dtype={"atom": str, "x": float, "y": float, "z": float}
             )
 
             st.write("### Input structure")
             st.dataframe(df)
 
-            # Isotope selection
-            gyr_atom = get_gyration_inputs(
-                df["atom"].tolist()
-            )
+            gyr_atom, nuc_labels = get_gyration_inputs(df["atom"].tolist())
 
-            # Calculate dipolar couplings
-            df_xyz_dipole = xyz_to_dipolar_data(
-                xyz_dataframe=df,
-                gyr_atom=gyr_atom
-            )
+            df_xyz_dipole = xyz_to_dipolar_data(xyz_dataframe=df, gyr_atom=gyr_atom)
 
-            st.write("### Dipolar couplings")
-            st.dataframe(
-                df_xyz_dipole,
-                hide_index=True
-            )
+            show_dipolar_output(df_xyz_dipole, nuc_labels)
 
     else:
 
@@ -280,10 +280,7 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 params = AllChem.ETKDGv3()
                 params.randomSeed = 0xf00d
 
-                status = AllChem.EmbedMolecule(
-                    mol3d,
-                    params
-                )
+                status = AllChem.EmbedMolecule(mol3d, params)
 
                 if status != 0:
                     st.error("Could not generate a 3D structure.")
@@ -294,15 +291,11 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                 if remove_1H:
                     mol3d = Chem.RemoveAllHs(mol3d)
 
-                style = st.selectbox(
-                    "Select style:",
-                    ["stick", "ball and stick", "sphere"]
-                )
+                style = st.selectbox("Select style:", ["stick", "ball and stick", "sphere"])
 
                 render3dmol(mol3d, style)
 
                 xyz_string = Chem.MolToXYZBlock(mol3d)
-
                 xyz_lines = xyz_string.strip().splitlines()
 
                 df = pd.read_csv(
@@ -311,32 +304,16 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
                     names=["atom", "x", "y", "z"]
                 )
 
-                if st.button("Calculate"):
+                # A checkbox instead of st.button: a button resets on every
+                # rerun, which would hide the output whenever a selectbox or
+                # table row below it is changed.
+                if st.checkbox("Calculate"):
 
                     st.write("### Input structure")
                     st.dataframe(df)
 
-                    # Isotope selection
-                    gyr_atom = get_gyration_inputs(
-                        df["atom"].tolist()
-                    )
+                    gyr_atom, nuc_labels = get_gyration_inputs(df["atom"].tolist())
 
-                    # Calculate dipolar couplings
-                    df_xyz_dipole = xyz_to_dipolar_data(
-                        xyz_dataframe=df,
-                        gyr_atom=gyr_atom
-                    )
+                    df_xyz_dipole = xyz_to_dipolar_data(xyz_dataframe=df, gyr_atom=gyr_atom)
 
-                    st.write("### Dipolar couplings")
-                    st.dataframe(
-                        df_xyz_dipole,
-                        hide_index=True
-                    )
-
-
-
-
-
-
-
-
+                    show_dipolar_output(df_xyz_dipole, nuc_labels)
