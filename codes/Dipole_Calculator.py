@@ -206,6 +206,18 @@ def dipole2dist(choice_nuc1, choice_nuc2, dipole):
     dist = 1e10 * ((1e-7 * abs((gyr1 * gyr2 * pl)) / dipole) ** (1 / 3))
     return dist
 
+def parse_xyz(text):
+    lines = text.strip().splitlines()
+    if lines and lines[0].strip().isdigit():   # standard header: atom count + comment
+        lines = lines[2:]
+    return pd.read_csv(
+        StringIO("\n".join(lines)),
+        sep=r"\s+",
+        names=["atom", "x", "y", "z"],
+        usecols=[0, 1, 2, 3],
+        dtype={"atom": str, "x": float, "y": float, "z": float},
+    )
+
 
 st.title(r"Dipolar Coupling Calculator")
 st.divider()
@@ -241,26 +253,33 @@ elif choice_of_calculation == 'Dipolar Couplings from Structure':
     )
 
     if options == "Manual":
+        st.header("Manual input of xyz coordinates")
 
-        xyz_lines = st.file_uploader("Upload an xyz coordinates file", type="xyz")
+        options_xyz = st.selectbox(
+            "Select input format",
+            options=["Paste xyz coordinates", "Upload xyz file"],
+            index=0
+        )
 
-        if xyz_lines is not None:
+        df = None   # always defined
 
-            df = pd.read_csv(
-                xyz_lines,
-                skiprows=2,
-                sep=r"\s+",
-                names=["atom", "x", "y", "z"],
-                dtype={"atom": str, "x": float, "y": float, "z": float}
-            )
+        if options_xyz == "Upload xyz file":
+            uploaded_file = st.file_uploader("Choose an xyz file", type=["xyz"])
+            if uploaded_file is not None:
+                df = parse_xyz(uploaded_file.getvalue().decode("utf-8"))
+        else:
+            st.caption("Paste the xyz coordinates below. The first two lines "
+                       "(atom count and comment) should be deleted.")
+            xyz_text = st.text_area("Paste xyz coordinates", height=250)
+            if xyz_text.strip():
+                df = parse_xyz(xyz_text)
 
+        if df is not None:
             st.write("### Input structure")
             st.dataframe(df)
 
             gyr_atom, nuc_labels = get_gyration_inputs(df["atom"].tolist())
-
             df_xyz_dipole = xyz_to_dipolar_data(xyz_dataframe=df, gyr_atom=gyr_atom)
-
             show_dipolar_output(df_xyz_dipole, nuc_labels)
 
     else:
