@@ -20,7 +20,7 @@ st.markdown("""
 ## Running the app online
 The apps are bundled into one multi-page Streamlit site — use the sidebar to jump between tools.
 
-**Live app:** [Online App](https://nmr-webapps-28ab810725dd.herokuapp.com)
+**Live app:** [Online App](https://nmr.nmr-dnp-grenoble.net)
 
 It can take a moment to load on the first visit if the service has been asleep; after that it's fast.
 
