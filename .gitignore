@@ -4,3 +4,12 @@ codes/.streamlit/secrets.toml
 .streamlit/secrets.toml
 .claude/*
 *claude*
+.DS_Store
+.idea/
+__pycache__/
+.venv/
+.DS_Store
+.idea/
+__pycache__/
+.venv/
+streamlit.env
