@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.devcontainer
+.agents
+.claude
+.gitbook
+.venv
+__pycache__
+*.pyc
+.DS_Store
+*.md
